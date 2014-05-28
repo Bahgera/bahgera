@@ -72,7 +72,7 @@ var _size = 10;
 var _processing = false;
 
 //Time to wait before trying again to send data to RFDuino when processing (in ms)
-var _sendDelay = 1000;
+var _sendDelay = 100;
 
 //Number of attempts to send chunk of data to RFDuino
 var _nbAttempts = 0;
@@ -86,7 +86,6 @@ var _nbAttempts = 0;
 
 //Draws search bar when searching device
 function buildSpinner() {
-	$('#search').text('1');
  	var square = new Sonic({
     width: 100,
     height: 100,
@@ -96,11 +95,8 @@ function buildSpinner() {
         ['line', 90, 10, 10, 10]
     ]
 	});
-	$('#search').text('2');
 	square.play();
-	$('#search').text('3');
 	$('#search').append(square.canvas);
-	$('#search').text('4');
 }
 
 //Generates HTML for LED grid in the Test section
@@ -108,6 +104,7 @@ function buildGridSelector() {
 	log('Building Test Grid Selector');
 	var html = '<table id="gridTable">';
 	_size = Math.min(Math.floor($(document).height()/3/_nbLedY), Math.floor(($(document).width()-(_nbLedX+1)*5)/_nbLedX));
+	log('Grid size = ' + _size);
 	for(var x=0;x<_nbLedX;x++) {
 		html += '<tr>';
 		for(var y=0;y<_nbLedY;y++) {
@@ -125,15 +122,17 @@ function buildGridSelector() {
 
 //Generates HTML for the color picker in the Test section
 function buildColorPicker() {
+	log('H=' + $(document).height() + ' W=' + $(document).width());
 	var colorTable = '<table id="colorTable">';
 	var palette = ['000000','555555','AAAAAA','FFFFFF','FF0000','00FF00','0000FF','FFFF00',
 		'FF00FF','00FFFF','0055AA','55AAFF','AAFF00','FF0055','AA5500','5500FF'];
+	_colorHeight = Math.floor($(document).height() / 3 / _nbLedY);
+	var width  = Math.floor(($(document).width() - 5) / _nbLedX);
+	log('Color picker height=' + _colorHeight);
 	for(var i=0;i<4;i++) {
 		colorTable+= '<tr>';
 		for(var j=0;j<4;j++) {
 			var color = palette[i*4+j];
-			_colorHeight = Math.floor($(document).height() / 3 / _nbLedY);
-			var width  = Math.floor(($(document).width() - 5) / _nbLedX);
 			colorTable+='<td style="border-width:1px;border-color:black;border-style:solid;'
 				+ 'width:' + width + 'px;height:' + _colorHeight +'px;'
 				+ 'background-color:#' + color + ';color:#' + color + '" '
@@ -144,6 +143,32 @@ function buildColorPicker() {
 	colorTable+= '</table>';
 	$("#colorPicker").html(colorTable);
 }
+
+//Generates Tile grid for Settings
+// function buildTilesLayoutSelector() {
+// 	log('Building Tiles Layout Selector');
+// 	var html = '<table id="tilesLayout"><tr><td></td>';
+// 	var nbTilesX = Math.floor(_nbLedX / 4);
+// 	var nbTilesY = Math.floor(_nbLedY / 4);
+// 	var size = Math.min($(document).height(),$(document).width()) / Math.max(nbTilesX,nbTilesY) / 2;
+// 	for(var x=1;x<nbTilesX+1;x++) {
+// 		html+='<td x="' + x + '" y="0" class="addTile">+</td>';
+// 	}
+// 	html+='<td></td></tr>';
+// 	for(var y=1;y<nbTilesY+1;y++) {
+// 		html += '<tr><td x="0" y="' + y +'" class="addTile">+</td>';
+// 		for(var x=1;x<nbTilesX+1;x++) {
+// 			html+= '<td x="' + x + '" y="' + y +'" class="tile" style="width:' + size + 'px;height:' + size + 'px">X</td>';
+// 		}
+// 		html+= '<td x="' + (nbTilesX+1) + '" y="' + y +'" class="addTile">+</td></tr>';
+// 	}
+// 	html+='<tr><td></td>';
+// 	for(var x=1;x<nbTilesX+1;x++) {
+// 		html+='<td x="' + x + '" y="' + (nbTilesY+1) + '" class="addTile">+</td>';
+// 	}
+// 	html+='<td></td></table>';
+// 	$("#tilesLayout").html(html);
+// }
 
 
 /***********************************************************************************************************************
@@ -165,6 +190,7 @@ app.initialize = function() {
 	
 	buildGridSelector();
 	buildColorPicker();
+// 	buildTilesLayoutSelector();
 	$('#canvas').attr('width',_nbLedX + 'px');
 	$('#canvas').attr('height',_nbLedY + 'px');
 	
@@ -296,7 +322,7 @@ function setGridFromPicture(imageData){
 					var pos = _grid[x][y].pos;
 					_grid[x][y].color = color;
 					_leds[pos].color = color;
-					$('#gridTable tr td[led=' + pos + ']').css('background-color': '#' + color);
+					$('#gridTable tr td[led=' + pos + ']').css({'background-color': '#' + color});
 				}
 			}
 		}, 200);
@@ -354,6 +380,7 @@ function onData(data) {
 	var sData = String.fromCharCode.apply(null, Array.prototype.slice.apply(view));
 	if(sData.indexOf('done') === 0) {
 		log('Finished current job');
+		_nbAttempts = 0;
 		_processing = false;
 	} else log('Received: "' + sData + '"');
 }
@@ -482,7 +509,6 @@ function initGrid() {
 			var led = { pos:ledPos, color:_pickedColor };
 			gridY.push({ pos:ledPos, color:_pickedColor });
 			_leds.push({ x: x, y: y, color:_pickedColor });
-			$('#search').text('hello');
 			if($('#gridTable tr td')) { $('#gridTable tr td').css({'background-color': '#' + _pickedColor}); }
 			pos++;
 		}
