@@ -103,7 +103,8 @@ function buildSpinner() {
 function buildGridSelector() {
 	log('Building Test Grid Selector');
 	var html = '<table id="gridTable">';
-	_size = Math.min(Math.floor($(document).height()/3/_nbLedY), Math.floor(($(document).width()-(_nbLedX+1)*5)/_nbLedX));
+	_size = Math.min(Math.floor(($(document).height()-4)/3/(_nbLedY+1)), 
+		Math.floor(($(document).width()-(_nbLedX+1)*5)/(_nbLedX+1)));
 	log('Grid size = ' + _size);
 	for(var x=0;x<_nbLedX;x++) {
 		html += '<tr>';
@@ -126,7 +127,7 @@ function buildColorPicker() {
 	var colorTable = '<table id="colorTable">';
 	var palette = ['000000','555555','AAAAAA','FFFFFF','FF0000','00FF00','0000FF','FFFF00',
 		'FF00FF','00FFFF','0055AA','55AAFF','AAFF00','FF0055','AA5500','5500FF'];
-	_colorHeight = Math.floor($(document).height() / 3 / _nbLedY);
+	_colorHeight = Math.floor(($(document).height()-20) / 3 / (_nbLedY+1));
 	var width  = Math.floor(($(document).width() - 5) / _nbLedX);
 	log('Color picker height=' + _colorHeight);
 	for(var i=0;i<4;i++) {
@@ -145,30 +146,30 @@ function buildColorPicker() {
 }
 
 //Generates Tile grid for Settings
-// function buildTilesLayoutSelector() {
-// 	log('Building Tiles Layout Selector');
-// 	var html = '<table id="tilesLayout"><tr><td></td>';
-// 	var nbTilesX = Math.floor(_nbLedX / 4);
-// 	var nbTilesY = Math.floor(_nbLedY / 4);
-// 	var size = Math.min($(document).height(),$(document).width()) / Math.max(nbTilesX,nbTilesY) / 2;
-// 	for(var x=1;x<nbTilesX+1;x++) {
-// 		html+='<td x="' + x + '" y="0" class="addTile">+</td>';
-// 	}
-// 	html+='<td></td></tr>';
-// 	for(var y=1;y<nbTilesY+1;y++) {
-// 		html += '<tr><td x="0" y="' + y +'" class="addTile">+</td>';
-// 		for(var x=1;x<nbTilesX+1;x++) {
-// 			html+= '<td x="' + x + '" y="' + y +'" class="tile" style="width:' + size + 'px;height:' + size + 'px">X</td>';
-// 		}
-// 		html+= '<td x="' + (nbTilesX+1) + '" y="' + y +'" class="addTile">+</td></tr>';
-// 	}
-// 	html+='<tr><td></td>';
-// 	for(var x=1;x<nbTilesX+1;x++) {
-// 		html+='<td x="' + x + '" y="' + (nbTilesY+1) + '" class="addTile">+</td>';
-// 	}
-// 	html+='<td></td></table>';
-// 	$("#tilesLayout").html(html);
-// }
+function buildTilesLayoutSelector() {
+	log('Building Tiles Layout Selector');
+	var html = '<table id="tilesLayout"><tr><td></td>';
+	var nbTilesX = Math.floor(_nbLedX / 4);
+	var nbTilesY = Math.floor(_nbLedY / 4);
+	var size = Math.min($(document).height(),$(document).width()) / Math.max(nbTilesX,nbTilesY) / 2;
+	for(var x=1;x<nbTilesX+1;x++) {
+		html+='<td x="' + x + '" y="0" class="addTile">+</td>';
+	}
+	html+='<td></td></tr>';
+	for(var y=1;y<nbTilesY+1;y++) {
+		html += '<tr><td x="0" y="' + y +'" class="addTile">+</td>';
+		for(var x=1;x<nbTilesX+1;x++) {
+			html+= '<td x="' + x + '" y="' + y +'" class="tile" style="width:' + size + 'px;height:' + size + 'px">X</td>';
+		}
+		html+= '<td x="' + (nbTilesX+1) + '" y="' + y +'" class="addTile">+</td></tr>';
+	}
+	html+='<tr><td></td>';
+	for(var x=1;x<nbTilesX+1;x++) {
+		html+='<td x="' + x + '" y="' + (nbTilesY+1) + '" class="addTile">+</td>';
+	}
+	html+='<td></td></table>';
+	$("#tilesLayout").html(html);
+}
 
 
 /***********************************************************************************************************************
@@ -190,7 +191,7 @@ app.initialize = function() {
 	
 	buildGridSelector();
 	buildColorPicker();
-// 	buildTilesLayoutSelector();
+	buildTilesLayoutSelector();
 	$('#canvas').attr('width',_nbLedX + 'px');
 	$('#canvas').attr('height',_nbLedY + 'px');
 	
@@ -226,9 +227,12 @@ app.disconnect = function() {
 		log('Disonnected');
 		_found = false;
 		_connected = false;
-		//$("#toolbar").hide();
+		_processing = false;
+		_nbAttempts = 0;
+		$("#toolbar").hide();
 		$("#settingsBar").hide();
-		$("#search").show();
+		$("#search").html('Searching device...').show();
+		buildSpinner();
 		searchDevice();
 	}, 
 	app.onError);
@@ -236,12 +240,7 @@ app.disconnect = function() {
 	
 app.onError = function(reason) {
 	log('ERROR:' + reason);
-	$("#test").hide();
-	_found = false;
-	_connected = false;
-	try{
-	navigator.notification.alert(reason, app.disconnect);
-	}catch(e){log(e);}
+	app.disconnect();
 };
 
 
@@ -380,7 +379,6 @@ function onData(data) {
 	var sData = String.fromCharCode.apply(null, Array.prototype.slice.apply(view));
 	if(sData.indexOf('done') === 0) {
 		log('Finished current job');
-		_nbAttempts = 0;
 		_processing = false;
 	} else log('Received: "' + sData + '"');
 }
@@ -427,6 +425,7 @@ function doWrite(data, cb) {
 	);
 	else {
 		_processing = true;
+		_nbAttempts = 0;
 		log('RFDuino ready, now sending "' + chunk + '" (' + chunk.length + ' of ' + data.length + ' bytes)');
 		rfduino.write(chunk,
 			function() { 
@@ -499,9 +498,9 @@ function initGrid() {
 		var gridY=[];
 		for(var y=0;y<_nbLedY;y++) {
 			//log('('+(x+1)+','+(y+1)+')=>'+pos);
-			var isReverse = false;
+			var isReverse = true;
 			var posDiv = Math.floor(pos/4);
-			if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = true;
+			if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = false;
 			var ledPos = pos;
 			if(isReverse) {
 				ledPos = (posDiv+1)*4-(pos%4)-1;
@@ -524,14 +523,19 @@ function initGrid() {
  **********************************************************************************************************************/
 
 
-//Generates the HEX data to send to RFduino
-//For 4x4=16 LEDs, needs to be 72 hex characters (12 bits per color * 3 colors * 16 LEDs = 576 bits = 72 hex characters
-function getData() {
+/**
+ * Generates the data to send to RFduino
+ *
+ * For 4x4=16 LEDs, needs to be 144 characters (12 bits per color * 3 colors * 16 LEDs = 576 bits = 144 x 4)
+ * The string passed to RFDuino is converted to an array of characters. When converted to integers, those characters
+ * are converted based on their ASCII value. This means that sending "0" corresponds to int 48 (see
+ * http://arduino.cc/en/Reference/ASCIIchart#.Uw6E-vRdX2k). This table is limited to 128 values and we need to send 
+ * values between 0 and 257, so we need to send 2 characters: The first character is either the ASCII value of '0' 
+ * (if the decimal value we need to send is less than 128) or '127' otherwise, while the second character is the rest.
+ */
+ function getData() {
+ 	//First we get the data as a binary string
 	var data = "";
-// 	return "FF";
-//log('Sending F converted');
-// 	for(var i=0;i<144;i++) data+="F";
-// 	return convertToBytes(data);
 	for(var i=0;i<_nbLedX*_nbLedY;i++) {
 // 		var isReverse = false;
 		var posDiv = Math.floor(i/4);
@@ -543,24 +547,14 @@ function getData() {
 	return convertToBytes(data);
 }
 
-//Converts given binary string to hexadecimal string of 2 characters.
-//This function is not expected to work for binaries with more than 8 bits.
+//Converts given binary string to a string of 2 characters, from which ASCCI values RFDuino can retrieve the original
+//decimal value. See description of getData() for more details.
+//This function is not expected to work for binaries with more than 8 bits, but we're supposed to get 8 bits at a time
 function binToASCII(bin) {
-//function binToHex(bin) {
 	var dec = 0;
 	for(var i=bin.length-1;i>=0;i--){
 		dec+= bin[i]*Math.pow(2,i);
 	}
-	//log('Converted ' + bin + ' to ' + char(dec));
-	//return String.fromCharCode(dec);
-	
-//Last version
-// 	var hex = dec.toString(16);
-// 	if(hex.length == 1) hex = "0" + hex;
-// 	log('Converted ' + bin + ' to ' + hex);
-// 	return hex;
-	
-	//From backup
 	var ascii;
 	if(dec < 128) { ascii = String.fromCharCode(0)   + String.fromCharCode(dec);     }
 	else {          ascii = String.fromCharCode(127) + String.fromCharCode(dec-128); }
@@ -569,26 +563,19 @@ function binToASCII(bin) {
 
 //Converts given binary string where each character is one bit to hexadecimal string
 function convertToBytes(data) {
-	log(data.length + ' bits in ' + data);
+	//log(data.length + ' bits in ' + data);
 	var bData = "";
+	//we parse the given data 8 bits at a time
 	for(var i=0;i<data.length/8;i++) {
 		var thisByte = data.substring(i*8,(i+1)*8);
-		//Last version
-		//bData+= binToHex(thisByte);
-		//From backup
 		bData+= binToASCII(thisByte);
 	}
-// 	var len = bData.length.toString(16);
-// 	bData = len + bData;
-// 	for(var i=0;i<4-len.length;i++) bData = "0"+bData;
 	log(bData.length + ' char in ' + bData);
 	return bData;
 }
 
 //Convert HTML color (3 bytes) to Baghera (36 bits)
 function convertColor(color, doReverse) {
-	//log('HEX='+color.substring(0,2));
-	//log('DEC='+parseInt(color.substring(0,2),16));
 	var hr = Math.round(parseInt(color.substring(4,6),16) * 4095 / 255);
 	var hg = Math.round(parseInt(color.substring(2,4),16) * 4095 / 255);
 	var hb = Math.round(parseInt(color.substring(0,2),16) * 4095 / 255);
