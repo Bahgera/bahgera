@@ -529,14 +529,15 @@ function initGrid() {
 function getData() {
 	var data = "";
 // 	return "FF";
+//log('Sending F converted');
 // 	for(var i=0;i<144;i++) data+="F";
-// 	return data;
+// 	return convertToBytes(data);
 	for(var i=0;i<_nbLedX*_nbLedY;i++) {
-		var isReverse = false;
+// 		var isReverse = false;
 		var posDiv = Math.floor(i/4);
-		if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = true;
-		var color = convertColor(_leds[i].color, isReverse);
-		//log('Color['+i+'] before='+_leds[i].color+' after='+color+' ('+color.length+' bits)');
+// 		if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = true;
+		var color = convertColor(_leds[i].color, false);//isReverse);
+// 		log('Color['+i+'] before='+_leds[i].color+' after='+color+' ('+color.length+' bits)');
 		data+= color;
 	}
 	return convertToBytes(data);
@@ -544,26 +545,38 @@ function getData() {
 
 //Converts given binary string to hexadecimal string of 2 characters.
 //This function is not expected to work for binaries with more than 8 bits.
-function binToHex(bin) {
+function binToASCII(bin) {
+//function binToHex(bin) {
 	var dec = 0;
 	for(var i=bin.length-1;i>=0;i--){
 		dec+= bin[i]*Math.pow(2,i);
 	}
 	//log('Converted ' + bin + ' to ' + char(dec));
 	//return String.fromCharCode(dec);
-	var hex = dec.toString(16);
-	if(hex.length == 1) hex = "0" + hex;
-	//log('Converted ' + bin + ' to ' + hex);
-	return hex;
+	
+//Last version
+// 	var hex = dec.toString(16);
+// 	if(hex.length == 1) hex = "0" + hex;
+// 	log('Converted ' + bin + ' to ' + hex);
+// 	return hex;
+	
+	//From backup
+	var ascii;
+	if(dec < 128) { ascii = String.fromCharCode(0)   + String.fromCharCode(dec);     }
+	else {          ascii = String.fromCharCode(127) + String.fromCharCode(dec-128); }
+	return ascii;
 }
 
 //Converts given binary string where each character is one bit to hexadecimal string
 function convertToBytes(data) {
-	//log(data.length + ' bits in ' + data);
+	log(data.length + ' bits in ' + data);
 	var bData = "";
 	for(var i=0;i<data.length/8;i++) {
 		var thisByte = data.substring(i*8,(i+1)*8);
-		bData+= binToHex(thisByte);
+		//Last version
+		//bData+= binToHex(thisByte);
+		//From backup
+		bData+= binToASCII(thisByte);
 	}
 // 	var len = bData.length.toString(16);
 // 	bData = len + bData;
@@ -576,9 +589,9 @@ function convertToBytes(data) {
 function convertColor(color, doReverse) {
 	//log('HEX='+color.substring(0,2));
 	//log('DEC='+parseInt(color.substring(0,2),16));
-	var hr = Math.round(parseInt(color.substring(0,2),16) * 4095 / 255);
+	var hr = Math.round(parseInt(color.substring(4,6),16) * 4095 / 255);
 	var hg = Math.round(parseInt(color.substring(2,4),16) * 4095 / 255);
-	var hb = Math.round(parseInt(color.substring(4,6),16) * 4095 / 255);
+	var hb = Math.round(parseInt(color.substring(0,2),16) * 4095 / 255);
 	//log('Red dec = ' + hr + ' bin = ' + extendTo12bits(hr.toString(2)));
 	var bin = extendTo12bits(hr.toString(2))+extendTo12bits(hg.toString(2))+extendTo12bits(hb.toString(2));
 	if(doReverse) bin = extendTo12bits(hr.toString(2))+extendTo12bits(hb.toString(2))+extendTo12bits(hg.toString(2));
