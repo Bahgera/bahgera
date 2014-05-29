@@ -59,6 +59,18 @@ var _grid = [];
 //leds[pos]={x,y,color}
 var _leds = [];
 
+//_layout[x][y]={nb}
+var _layout = [];
+
+//Number of 4x4 tiles
+var _nbTiles = 1;
+
+//Size of the Tiles layout (X)
+var _nbTilesX = 1;
+
+//Size of the Tiles layout (Y)
+var _nbTilesY = 1;
+
 //Color picked by user in colorPicker
 var _pickedColor = '000000';
 
@@ -149,26 +161,28 @@ function buildColorPicker() {
 function buildTilesLayoutSelector() {
 	log('Building Tiles Layout Selector');
 	var html = '<table id="tilesLayout"><tr><td></td>';
-	var nbTilesX = Math.floor(_nbLedX / 4);
-	var nbTilesY = Math.floor(_nbLedY / 4);
-	var size = Math.min($(document).height(),$(document).width()) / Math.max(nbTilesX,nbTilesY) / 2;
-	for(var x=1;x<nbTilesX+1;x++) {
+	var size = Math.min($(document).height(),$(document).width()) / Math.max(_nbTilesX,_nbTilesY) / 2;
+	for(var x=1;x<_nbTilesX+1;x++) {
 		html+='<td x="' + x + '" y="0" class="addTile">+</td>';
 	}
 	html+='<td></td></tr>';
-	for(var y=1;y<nbTilesY+1;y++) {
+	for(var y=1;y<_nbTilesY+1;y++) {
 		html += '<tr><td x="0" y="' + y +'" class="addTile">+</td>';
-		for(var x=1;x<nbTilesX+1;x++) {
-			html+= '<td x="' + x + '" y="' + y +'" class="tile" style="width:' + size + 'px;height:' + size + 'px">X</td>';
+		for(var x=1;x<_nbTilesX+1;x++) {
+			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x-1][y-1].nb 
+				+ '" style="width:' + size + 'px;height:' + size + 'px"';
+			if(_layout[x-1][y-1].nb > 0) html+= ' class="tile">X';
+			else html+= ' class="addTile">+';
+			html+='</td>';
 		}
-		html+= '<td x="' + (nbTilesX+1) + '" y="' + y +'" class="addTile">+</td></tr>';
+		html+= '<td x="' + (_nbTilesX+1) + '" y="' + y +'" class="addTile">+</td></tr>';
 	}
 	html+='<tr><td></td>';
-	for(var x=1;x<nbTilesX+1;x++) {
-		html+='<td x="' + x + '" y="' + (nbTilesY+1) + '" class="addTile">+</td>';
+	for(var x=1;x<_nbTilesX+1;x++) {
+		html+='<td x="' + x + '" y="' + (_nbTilesY+1) + '" class="addTile">+</td>';
 	}
 	html+='<td></td></table>';
-	$("#tilesLayout").html(html);
+	$("#tilesLayoutArea").html(html);
 }
 
 
@@ -188,6 +202,7 @@ app.initialize = function() {
 	buildSpinner();
 	
 	initGrid();
+	initLayout();
 	
 	buildGridSelector();
 	buildColorPicker();
@@ -199,6 +214,7 @@ app.initialize = function() {
 	
 	$('#colorPicker').on('tap', colorPicked);
 	$('#colorPicker').on('taphold', switchColor);
+	$('#tilesLayout').on('tap', layoutTapped);
 	$('#gridSelector').on('tap', ledSelected);
 	$('#pictureButton').click(getPicture);
 	$('#takeNew').click(takeNewPhoto);
@@ -233,6 +249,7 @@ app.disconnect = function() {
 		$("#settingsBar").hide();
 		$("#search").html('Searching device...').show();
 		buildSpinner();
+		log('Searching device...');
 		searchDevice();
 	}, 
 	app.onError);
@@ -342,7 +359,7 @@ function setGridFromPicture(imageData){
  * Attempts to discover RFDuino devices 
  */
 function searchDevice() {
-	log('Searching device...');
+	//log('Searching device...');
 	rfduino.discover(_searchDelay, app.onDiscoverDevice, app.onError);
 	setTimeout(function(){
 		if(!_found) { searchDevice(); }
@@ -514,6 +531,70 @@ function initGrid() {
 		_grid.push(gridY);
 	}
 } 
+
+
+/***********************************************************************************************************************
+ *
+ * LAYOUT FUNCTIONS
+ *
+ **********************************************************************************************************************/
+
+
+function initLayout() {
+	_layout.push([{nb:1}]);
+}
+
+/**
+ * Set all LEDs to the color on which the user double clicked
+ */
+function layoutTapped(e) {
+	var x = e.target.getAttribute('x');
+	var y = e.target.getAttribute('y');
+	var cellClass = e.target.getAttribute('class');
+	log('Tapped ' + cellClass + ' at (' + x + ',' + y + ')');
+	if(cellClass === 'addTile') {
+		if(x === 0) {
+			_layout.push(_layout[_layout.length-1]);
+			for(var i=_layout.length-2;i>0;i--) {
+				_layout[i] = _layout[i-1];
+			}
+			_layout[0]=[];
+			for(var i=0;i<_nbTilesY;i++) { _layout[0].push({nb:0}); }
+			_nbTilesX++;
+		}
+		if(y === 0) {
+			_layout[x].push(_layout[x][_layout[x].length-1]);
+			for(var i=_layout[x].length-2;i>0;i--) {
+				_layout[x][i] = _layout[x][i-1];
+			}
+			for(var i=0;i<_nbTilesX;i++) { _layout[i][0].nb = 0; }
+			_nbTilesY++;
+		}
+		if(x > _nbTilesX) {
+			var newCol = [];
+			for(var i=0;i<_nbTilesY;i++) { newCol.push({nb:0}); }
+			_layout.push(newCol);
+			_nbTilesX++;
+		}
+		if(y > _nbTilesY) {
+			for(var i=0;i<_nbTilesX;i++) { _layout[i].push({nb:0}); }
+			_nbTilesY++;
+		}
+		_nbTiles++;
+		if(x === 0) {
+			if(y == 0) { _layout[0][0] = _nbTiles; }
+			else { _layout[0][y-1] = _nbTiles; }
+		} else {
+			if(y == 0) { _layout[x-1][0] = _nbTiles; }
+			else { _layout[x-1][y-1] = _nbTiles; }
+		}
+		log('New layout: ' + _layout);
+	} else if(cellClass === 'tile') {
+		log('Remove tile');
+	} else {
+		log('Unexpected class "' + cellClass + '"');
+	}
+}
 
 
 /***********************************************************************************************************************
