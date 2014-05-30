@@ -176,8 +176,8 @@ function buildTilesLayoutSelector() {
 				for(var lx=0;lx<4;lx++) {
 					html += '<tr>';
 					for(var ly=0;ly<4;ly++) {
-						html+= '<td style="width:' + _size/5 + 'px;height:' + _size/5 + 'px" class="ledCell">'
-							+ '<img src="img/led.png"' + '" style="width:' + _size/5 + 'px;height:' + _size/5 
+						html+= '<td style="width:' + size/5 + 'px;height:' + size/5 + 'px" class="ledCell">'
+							+ '<img src="img/led.png"' + '" style="width:' + size/5 + 'px;height:' + size/5 
 							+ 'px"  class="led" /></td>';
 					}
 					html+= '</tr>';
@@ -578,11 +578,13 @@ function layoutTapped(e) {
 			_layout[0][y].nb = _nbTiles + 1;
 			_nbTilesX++;
 		} else if(y === -1) {
-			_layout[x].push({nb: _layout[x][_layout[x].length-1].nb});
-			for(var i=_layout[x].length-2;i>0;i--) {
-				_layout[x][i].nb = _layout[x][i-1].nb;
+			for(var i=0;i<_nbTilesX;i++) {
+				_layout[i].push({nb: _layout[i][_layout[i].length-1].nb});
+				for(var j=_layout[i].length-2;j>0;j--) {
+					_layout[i][j].nb = _layout[i][j-1].nb;
+				}
+				_layout[i][0].nb = 0; 
 			}
-			for(var i=0;i<_nbTilesX;i++) { _layout[i][0].nb = 0; }
 			_layout[x][0].nb = _nbTiles + 1;
 			_nbTilesY++;
 		} else if(x === _nbTilesX) {
@@ -606,6 +608,9 @@ function layoutTapped(e) {
 		log('Remove tile');
 	} else {
 		log('Unexpected class "' + cellClass + '"');
+		if(cellClass === null) {
+			log(JSON.stringify(e.target));
+		}
 	}
 }
 
