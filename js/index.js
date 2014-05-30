@@ -167,7 +167,7 @@ function buildTilesLayoutSelector() {
 	}
 	html+='<td></td></tr>';
 	for(var y=0;y<_nbTilesY;y++) {
-		html += '<tr><td x="-1" y="' + y +'" class="addTile">+</td>';
+		html += '<tr><td style="width:' + size + 'px;height:' + size + 'px" x="-1" y="' + y +'" class="addTile">+</td>';
 		for(var x=0;x<_nbTilesX;x++) {
 			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x][y].nb 
 				+ '" style="width:' + size + 'px;height:' + size + 'px"';
@@ -186,7 +186,7 @@ function buildTilesLayoutSelector() {
 			} else html+= ' class="addTile">+';
 			html+='</td>';
 		}
-		html+= '<td x="' + _nbTilesX + '" y="' + y +'" class="addTile">+</td></tr>';
+		html+= '<td style="width:' + size + 'px;height:' + size + 'px" x="' + _nbTilesX + '" y="' + y +'" class="addTile">+</td></tr>';
 	}
 	html+='<tr><td></td>';
 	for(var x=0;x<_nbTilesX;x++) {
@@ -608,9 +608,7 @@ function layoutTapped(e) {
 		log('Remove tile');
 	} else {
 		log('Unexpected class "' + cellClass + '"');
-		if(cellClass === null) {
-			log(JSON.stringify(e.target));
-		}
+		log(JSON.stringify(e.target));
 	}
 }
 
