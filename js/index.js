@@ -162,24 +162,35 @@ function buildTilesLayoutSelector() {
 	log('Building Tiles Layout Selector');
 	var html = '<table id="tilesLayout"><tr><td></td>';
 	var size = Math.min($(document).height(),$(document).width()) / Math.max(_nbTilesX,_nbTilesY) / 2;
-	for(var x=1;x<_nbTilesX+1;x++) {
-		html+='<td x="' + x + '" y="0" class="addTile">+</td>';
+	for(var x=0;x<_nbTilesX;x++) {
+		html+='<td x="' + x + '" y="-1" class="addTile">+</td>';
 	}
 	html+='<td></td></tr>';
-	for(var y=1;y<_nbTilesY+1;y++) {
-		html += '<tr><td x="0" y="' + y +'" class="addTile">+</td>';
-		for(var x=1;x<_nbTilesX+1;x++) {
-			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x-1][y-1].nb 
+	for(var y=0;y<_nbTilesY;y++) {
+		html += '<tr><td x="-1" y="' + y +'" class="addTile">+</td>';
+		for(var x=0;x<_nbTilesX;x++) {
+			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x][y].nb 
 				+ '" style="width:' + size + 'px;height:' + size + 'px"';
-			if(_layout[x-1][y-1].nb > 0) html+= ' class="tile">X';
-			else html+= ' class="addTile">+';
+			if(_layout[x][y].nb > 0) {
+				html+= ' class="tile"><table>';
+				for(var lx=0;lx<4;lx++) {
+					html += '<tr>';
+					for(var ly=0;ly<4;ly++) {
+						html+= '<td style="width:' + _size/5 + 'px;height:' + _size/5 + 'px" class="ledCell">'
+							+ '<img src="img/led.png"' + '" style="width:' + _size/5 + 'px;height:' + _size/5 
+							+ 'px"  class="led" /></td>';
+					}
+					html+= '</tr>';
+				}
+				html+='</table>';
+			} else html+= ' class="addTile">+';
 			html+='</td>';
 		}
-		html+= '<td x="' + (_nbTilesX+1) + '" y="' + y +'" class="addTile">+</td></tr>';
+		html+= '<td x="' + _nbTilesX + '" y="' + y +'" class="addTile">+</td></tr>';
 	}
 	html+='<tr><td></td>';
-	for(var x=1;x<_nbTilesX+1;x++) {
-		html+='<td x="' + x + '" y="' + (_nbTilesY+1) + '" class="addTile">+</td>';
+	for(var x=0;x<_nbTilesX;x++) {
+		html+='<td x="' + x + '" y="' + _nbTilesY + '" class="addTile">+</td>';
 	}
 	html+='<td></td></table>';
 	$("#tilesLayoutArea").html(html);
@@ -548,47 +559,49 @@ function initLayout() {
  * Set all LEDs to the color on which the user double clicked
  */
 function layoutTapped(e) {
-	var x = e.target.getAttribute('x');
-	var y = e.target.getAttribute('y');
+	var x = parseInt(e.target.getAttribute('x')); 
+	var y = parseInt(e.target.getAttribute('y'));
 	var cellClass = e.target.getAttribute('class');
-	log('Tapped ' + cellClass + ' at (' + x + ',' + y + ')');
+	log('Tapped ' + cellClass + ' at (' + x + ',' + y + '), _nbTilesX=' + _nbTilesX + ', nbTilesY=' + _nbTilesY);
 	if(cellClass === 'addTile') {
-		if(x === 0) {
-			_layout.push(_layout[_layout.length-1]);
+		if(x === -1) {
+			var newRow = [];
+			for(var i=0;i<_layout[_layout.length-1].length;i++) { newRow.push({nb:_layout[_layout.length-1][i].nb}); }
+			_layout.push(newRow);
 			for(var i=_layout.length-2;i>0;i--) {
-				_layout[i] = _layout[i-1];
+				var movedRow = [];
+				for(var j=0;j<_layout[i-1].length;j++) { movedRow.push({nb:_layout[i-1][j].nb}); }
+				_layout[i] = movedRow;
 			}
 			_layout[0]=[];
 			for(var i=0;i<_nbTilesY;i++) { _layout[0].push({nb:0}); }
+			_layout[0][y].nb = _nbTiles + 1;
 			_nbTilesX++;
-		}
-		if(y === 0) {
-			_layout[x].push(_layout[x][_layout[x].length-1]);
+		} else if(y === -1) {
+			_layout[x].push({nb: _layout[x][_layout[x].length-1].nb});
 			for(var i=_layout[x].length-2;i>0;i--) {
-				_layout[x][i] = _layout[x][i-1];
+				_layout[x][i].nb = _layout[x][i-1].nb;
 			}
 			for(var i=0;i<_nbTilesX;i++) { _layout[i][0].nb = 0; }
+			_layout[x][0].nb = _nbTiles + 1;
 			_nbTilesY++;
-		}
-		if(x > _nbTilesX) {
+		} else if(x === _nbTilesX) {
 			var newCol = [];
 			for(var i=0;i<_nbTilesY;i++) { newCol.push({nb:0}); }
 			_layout.push(newCol);
+			_layout[x][y].nb = _nbTiles + 1;
 			_nbTilesX++;
-		}
-		if(y > _nbTilesY) {
+		} else if(y === _nbTilesY) {
 			for(var i=0;i<_nbTilesX;i++) { _layout[i].push({nb:0}); }
+			_layout[x][y].nb = _nbTiles + 1;
 			_nbTilesY++;
+		} else {
+			_layout[x][y].nb = _nbTiles + 1;
 		}
 		_nbTiles++;
-		if(x === 0) {
-			if(y == 0) { _layout[0][0] = _nbTiles; }
-			else { _layout[0][y-1] = _nbTiles; }
-		} else {
-			if(y == 0) { _layout[x-1][0] = _nbTiles; }
-			else { _layout[x-1][y-1] = _nbTiles; }
-		}
-		log('New layout: ' + _layout);
+		log('New layout: ' + JSON.stringify(_layout));
+		buildTilesLayoutSelector();
+		$('#tilesLayout').on('tap', layoutTapped);
 	} else if(cellClass === 'tile') {
 		log('Remove tile');
 	} else {
