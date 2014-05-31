@@ -89,6 +89,9 @@ var _sendDelay = 100;
 //Number of attempts to send chunk of data to RFDuino
 var _nbAttempts = 0;
 
+//true when editing tiles layout
+var _isEditMode = false;
+
 /***********************************************************************************************************************
  *
  * UI INIT FUNCTIONS
@@ -196,6 +199,66 @@ function buildTilesLayoutSelector() {
 	$("#tilesLayoutArea").html(html);
 }
 
+/**
+ * Generates LED grid
+ * @param {doEditLayout} true when editing the tiles layout
+ */
+function drawGrid(doEditLayout) {
+	log('Draw grid');
+	var html = '<table id="gridSelector"><tr><td></td>';
+	var size = Math.min($(document).height(),$(document).width()) / Math.max(_nbTilesX,_nbTilesY) / 2;
+	for(var x=0;x<_nbTilesX;x++) {
+		if(doEditLayout) { html+='<td x="' + x + '" y="-1" class="addTile">+</td>'; }
+		else { html+='<td x="' + x + '" y="-1"></td>'; }
+	}
+	html+='<td></td></tr>';
+	for(var y=0;y<_nbTilesY;y++) {
+		if(doEditLayout) { 
+			html += '<tr><td style="width:' + size + 'px;height:' + size + 'px" x="-1" y="' + y +'" class="addTile">+</td>';
+		} else {
+			html += '<tr><td style="width:' + size + 'px;height:' + size + 'px" x="-1" y="' + y +'"></td>';
+		}
+		for(var x=0;x<_nbTilesX;x++) {
+			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x][y].nb 
+				+ '" style="width:' + size + 'px;height:' + size + 'px"';
+			if(_layout[x][y].nb > 0) {
+				html+= ' class="tile"><table>';
+				for(var lx=0;lx<4;lx++) {
+					html += '<tr>';
+					for(var ly=0;ly<4;ly++) {
+						html+= '<td led="' + _grid[x][y].pos 
+							+ '" style="width:' + size/5 + 'px;height:' + size/5 + 'px" class="ledCell">'
+							+ '<img src="img/led.png"' + '" style="width:' + size/5 + 'px;height:' + size/5 
+							+ 'px"  class="led" led="' + _grid[x][y].pos + '"/>'
+							+ '</td>';
+					}
+					html+= '</tr>';
+				}
+				html+='</table>';
+			} else {
+				if(doEditLayout) { html+= ' class="addTile">+'; }
+				else { html+= '>'; }
+			}
+			html+='</td>';
+		}
+		if(doEditLayout) {
+			html+= '<td style="width:' + size + 'px;height:' + size + 'px" x="' + _nbTilesX + '" y="' + y +'" class="addTile">+</td></tr>';
+		} else {
+			html+= '<td style="width:' + size + 'px;height:' + size + 'px" x="' + _nbTilesX + '" y="' + y +'"></td></tr>';
+		}
+	}
+	html+='<tr><td></td>';
+	for(var x=0;x<_nbTilesX;x++) {
+		if(doEditLayout) { html+='<td x="' + x + '" y="' + _nbTilesY + '" class="addTile">+</td>'; }
+		else { html+='<td x="' + x + '" y="' + _nbTilesY + '"></td>'; }
+	}
+	html+='<td></td></table>';
+	$("#gridSelector").html(html);
+	$('#gridSelector').unbind('tap');
+	if(doEditLayout) { $('#gridSelector').on('tap', layoutTapped); }
+	else { $('#gridSelector').on('tap', ledSelected); }
+}
+
 
 /***********************************************************************************************************************
  *
@@ -215,9 +278,10 @@ app.initialize = function() {
 	initGrid();
 	initLayout();
 	
-	buildGridSelector();
+	//buildGridSelector();
 	buildColorPicker();
-	buildTilesLayoutSelector();
+	//buildTilesLayoutSelector();
+	drawGrid();
 	$('#canvas').attr('width',_nbLedX + 'px');
 	$('#canvas').attr('height',_nbLedY + 'px');
 	
@@ -225,14 +289,15 @@ app.initialize = function() {
 	
 	$('#colorPicker').on('tap', colorPicked);
 	$('#colorPicker').on('taphold', switchColor);
-	$('#tilesLayout').on('tap', layoutTapped);
-	$('#gridSelector').on('tap', ledSelected);
+	//$('#tilesLayout').on('tap', layoutTapped);
+	//$('#gridSelector').on('tap', ledSelected);
 	$('#pictureButton').click(getPicture);
 	$('#takeNew').click(takeNewPhoto);
 	$('#chooseExisting').click(chooseExistingPhoto);
 	$('#cancelPhoto').click(closePhoto);
 	$('#sendButton').click(send);
 	$('#offButton').click(switchOff);
+	$('#layoutButton').click(toggleLayoutMode);
 	$('#settingsButton').click(showSettings);
 	$('#clearLogsButton').click(clearLogs);
 	$('#closeSettingButton').click(hideSettings);
@@ -500,7 +565,6 @@ function switchColor(e) {
 function ledSelected(e) {
 	var ledPos = e.target.getAttribute('led');
 	var led = _leds[ledPos];
-	log('_size='+_size);
 	e.target.parentNode.removeAttribute('style');
 	e.target.parentNode.setAttribute('style','width:' + _size + 'px;height:' + _size 
 		+ 'px;background-color:#' + _pickedColor + ';color:#' + _pickedColor);
@@ -550,6 +614,18 @@ function initGrid() {
  *
  **********************************************************************************************************************/
 
+//Show settings
+function toggleLayoutMode() {
+	_isEditMode = !_isEditMode;
+	if(_isEditMode) { 
+		$('#layoutButton').attr('style','color:yellow'); 
+		$('#colorPicker').hide();
+	} else { 
+		$('#layoutButton').removeAttr('style'); 
+		$('#colorPicker').show();
+	}
+	drawGrid(_isEditMode);
+}
 
 function initLayout() {
 	_layout.push([{nb:1}]);
@@ -602,8 +678,8 @@ function layoutTapped(e) {
 		}
 		_nbTiles++;
 		log('New layout: ' + JSON.stringify(_layout));
-		buildTilesLayoutSelector();
-		$('#tilesLayout').on('tap', layoutTapped);
+		drawGrid(true);
+		//$('#tilesLayout').on('tap', layoutTapped);
 	} else if(cellClass === 'tile') {
 		log('Remove tile');
 	} else {
