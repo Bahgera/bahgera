@@ -682,6 +682,7 @@ function layoutTapped(e) {
 		//$('#tilesLayout').on('tap', layoutTapped);
 	} else if(cellClass === 'tile' || cellClass === 'led' || cellClass === 'ledCell') {
 		log('Clicked tile (' + x + ',' + y +')');
+		$('#tileMenu').slideToggle();
 	} else {
 		log('Unexpected class "' + cellClass + '"');
 	}
