@@ -115,26 +115,26 @@ function buildSpinner() {
 }
 
 //Generates HTML for LED grid in the Test section
-function buildGridSelector() {
-	log('Building Test Grid Selector');
-	var html = '<table id="gridTable">';
-	_size = Math.min(Math.floor(($(document).height()-4)/3/(_nbLedY+1)), 
-		Math.floor(($(document).width()-(_nbLedX+1)*5)/(_nbLedX+1)));
-	log('Grid size = ' + _size);
-	for(var x=0;x<_nbLedX;x++) {
-		html += '<tr>';
-		for(var y=0;y<_nbLedY;y++) {
-			html+= '<td led="' + _grid[x][y].pos 
-				+ '" style="width:' + _size + 'px;height:' + _size + 'px" class="ledCell">'
-				+ '<img src="img/led.png"' + '" style="width:' + _size + 'px;height:' + _size 
-				+ 'px"  class="led" led="' + _grid[x][y].pos + '"/>'
-				+ '</td>';
-		}
-		html+= '</tr>';
-	}
-	html+='</table>';
-	$("#gridSelector").html(html);
-}
+// function buildGridSelector() {
+// 	log('Building Test Grid Selector');
+// 	var html = '<table id="gridTable">';
+// 	_size = Math.min(Math.floor(($(document).height()-4)/3/(_nbLedY+1)), 
+// 		Math.floor(($(document).width()-(_nbLedX+1)*5)/(_nbLedX+1)));
+// 	log('Grid size = ' + _size);
+// 	for(var x=0;x<_nbLedX;x++) {
+// 		html += '<tr>';
+// 		for(var y=0;y<_nbLedY;y++) {
+// 			html+= '<td led="' + _grid[x][y].pos 
+// 				+ '" style="width:' + _size + 'px;height:' + _size + 'px" class="ledCell">'
+// 				+ '<img src="img/led.png"' + '" style="width:' + _size + 'px;height:' + _size 
+// 				+ 'px"  class="led" led="' + _grid[x][y].pos + '"/>'
+// 				+ '</td>';
+// 		}
+// 		html+= '</tr>';
+// 	}
+// 	html+='</table>';
+// 	$("#gridSelector").html(html);
+// }
 
 //Generates HTML for the color picker in the Test section
 function buildColorPicker() {
@@ -161,43 +161,43 @@ function buildColorPicker() {
 }
 
 //Generates Tile grid for Settings
-function buildTilesLayoutSelector() {
-	log('Building Tiles Layout Selector');
-	var html = '<table id="tilesLayout"><tr><td></td>';
-	var size = Math.min($(document).height(),$(document).width()) / Math.max(_nbTilesX,_nbTilesY) / 2;
-	for(var x=0;x<_nbTilesX;x++) {
-		html+='<td x="' + x + '" y="-1" class="addTile">+</td>';
-	}
-	html+='<td></td></tr>';
-	for(var y=0;y<_nbTilesY;y++) {
-		html += '<tr><td style="width:' + size + 'px;height:' + size + 'px" x="-1" y="' + y +'" class="addTile">+</td>';
-		for(var x=0;x<_nbTilesX;x++) {
-			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x][y].nb 
-				+ '" style="width:' + size + 'px;height:' + size + 'px"';
-			if(_layout[x][y].nb > 0) {
-				html+= ' class="tile"><table>';
-				for(var lx=0;lx<4;lx++) {
-					html += '<tr>';
-					for(var ly=0;ly<4;ly++) {
-						html+= '<td style="width:' + size/5 + 'px;height:' + size/5 + 'px" class="ledCell">'
-							+ '<img src="img/led.png"' + '" style="width:' + size/5 + 'px;height:' + size/5 
-							+ 'px"  class="led" /></td>';
-					}
-					html+= '</tr>';
-				}
-				html+='</table>';
-			} else html+= ' class="addTile">+';
-			html+='</td>';
-		}
-		html+= '<td style="width:' + size + 'px;height:' + size + 'px" x="' + _nbTilesX + '" y="' + y +'" class="addTile">+</td></tr>';
-	}
-	html+='<tr><td></td>';
-	for(var x=0;x<_nbTilesX;x++) {
-		html+='<td x="' + x + '" y="' + _nbTilesY + '" class="addTile">+</td>';
-	}
-	html+='<td></td></table>';
-	$("#tilesLayoutArea").html(html);
-}
+// function buildTilesLayoutSelector() {
+// 	log('Building Tiles Layout Selector');
+// 	var html = '<table id="tilesLayout"><tr><td></td>';
+// 	var size = Math.min($(document).height(),$(document).width()) / Math.max(_nbTilesX,_nbTilesY) / 2;
+// 	for(var x=0;x<_nbTilesX;x++) {
+// 		html+='<td x="' + x + '" y="-1" class="addTile">+</td>';
+// 	}
+// 	html+='<td></td></tr>';
+// 	for(var y=0;y<_nbTilesY;y++) {
+// 		html += '<tr><td style="width:' + size + 'px;height:' + size + 'px" x="-1" y="' + y +'" class="addTile">+</td>';
+// 		for(var x=0;x<_nbTilesX;x++) {
+// 			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x][y].nb 
+// 				+ '" style="width:' + size + 'px;height:' + size + 'px"';
+// 			if(_layout[x][y].nb > 0) {
+// 				html+= ' class="tile"><table>';
+// 				for(var lx=0;lx<4;lx++) {
+// 					html += '<tr>';
+// 					for(var ly=0;ly<4;ly++) {
+// 						html+= '<td style="width:' + size/5 + 'px;height:' + size/5 + 'px" class="ledCell">'
+// 							+ '<img src="img/led.png"' + '" style="width:' + size/5 + 'px;height:' + size/5 
+// 							+ 'px"  class="led" /></td>';
+// 					}
+// 					html+= '</tr>';
+// 				}
+// 				html+='</table>';
+// 			} else html+= ' class="addTile">+';
+// 			html+='</td>';
+// 		}
+// 		html+= '<td style="width:' + size + 'px;height:' + size + 'px" x="' + _nbTilesX + '" y="' + y +'" class="addTile">+</td></tr>';
+// 	}
+// 	html+='<tr><td></td>';
+// 	for(var x=0;x<_nbTilesX;x++) {
+// 		html+='<td x="' + x + '" y="' + _nbTilesY + '" class="addTile">+</td>';
+// 	}
+// 	html+='<td></td></table>';
+// 	$("#tilesLayoutArea").html(html);
+// }
 
 /**
  * Generates LED grid
@@ -222,14 +222,14 @@ function drawGrid(doEditLayout) {
 			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x][y].nb 
 				+ '" style="width:' + size + 'px;height:' + size + 'px"';
 			if(_layout[x][y].nb > 0) {
-				html+= ' class="tile"><table>';
+				html+= ' class="tile"><table class="tile" x="' + x + '" y="' + y +'" >';
 				for(var lx=0;lx<4;lx++) {
 					html += '<tr>';
 					for(var ly=0;ly<4;ly++) {
 						html+= '<td led="' + _grid[x][y].pos 
-							+ '" style="width:' + size/5 + 'px;height:' + size/5 + 'px" class="ledCell">'
+							+ '" style="width:' + size/5 + 'px;height:' + size/5 + 'px" x="' + x + '" y="' + y +'" class="ledCell">'
 							+ '<img src="img/led.png"' + '" style="width:' + size/5 + 'px;height:' + size/5 
-							+ 'px"  class="led" led="' + _grid[x][y].pos + '"/>'
+							+ 'px"  class="led" led="' + _grid[x][y].pos + '"  x="' + x + '" y="' + y +'"/>'
 							+ '</td>';
 					}
 					html+= '</tr>';
@@ -680,11 +680,10 @@ function layoutTapped(e) {
 		log('New layout: ' + JSON.stringify(_layout));
 		drawGrid(true);
 		//$('#tilesLayout').on('tap', layoutTapped);
-	} else if(cellClass === 'tile') {
-		log('Remove tile');
+	} else if(cellClass === 'tile' || cellClass === 'led' || cellClass === 'ledCell') {
+		log('Clicked tile (' + x + ',' + y +')');
 	} else {
 		log('Unexpected class "' + cellClass + '"');
-		log(JSON.stringify(e.target));
 	}
 }
 
