@@ -209,7 +209,7 @@ function buildColorPicker() {
 function drawGrid(doEditLayout) {
 	log('Draw grid');
 	var html = '<table id="gridSelector"><tr><td></td>';
-	var size = Math.min($(document).height(),$(document).width()) / Math.max(_nbTilesX,_nbTilesY) / 2;
+	var size = Math.floor(Math.min($(document).height()/2/ _nbTilesY, $(document).width()/_nbTilesX) * 0.9);
 	for(var x=0;x<_nbTilesX;x++) {
 		if(doEditLayout) { html+='<td x="' + x + '" y="-1" class="addTile">+</td>'; }
 		else { html+='<td x="' + x + '" y="-1"></td>'; }
@@ -230,8 +230,8 @@ function drawGrid(doEditLayout) {
 					html += '<tr>';
 					for(var ly=0;ly<4;ly++) {
 						html+= '<td led="' + _grid[lx][ly].pos 
-							+ '" style="width:' + size/5 + 'px;height:' + size/5 + 'px" x="' + x + '" y="' + y +'" class="ledCell">'
-							+ '<img src="img/led.png"' + '" style="width:' + size/5 + 'px;height:' + size/5 
+							+ '" style="width:' + size/4 + 'px;height:' + size/4 + 'px" x="' + x + '" y="' + y +'" class="ledCell">'
+							+ '<img src="img/led.png"' + '" style="width:' + size/4 + 'px;height:' + size/4 
 							+ 'px"  class="led" led="' + _grid[lx][ly].pos + '"  x="' + x + '" y="' + y +'"/>'
 							+ '</td>';
 					}
