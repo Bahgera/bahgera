@@ -571,6 +571,8 @@ function switchColor(e) {
  */
 function ledSelected(e) {
 	var ledPos = e.target.getAttribute('led');
+	if(ledPos === null) { return log('Clicked outside of LED'); }
+	log('selected led ' + ledPos);
 	var led = _leds[ledPos];
 	e.target.parentNode.removeAttribute('style');
 	e.target.parentNode.setAttribute('style','width:' + _size + 'px;height:' + _size 
