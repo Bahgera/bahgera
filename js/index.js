@@ -229,10 +229,10 @@ function drawGrid(doEditLayout) {
 				for(var lx=0;lx<4;lx++) {
 					html += '<tr>';
 					for(var ly=0;ly<4;ly++) {
-						html+= '<td led="' + _grid[x][y].pos 
+						html+= '<td led="' + _grid[lx][ly].pos 
 							+ '" style="width:' + size/5 + 'px;height:' + size/5 + 'px" x="' + x + '" y="' + y +'" class="ledCell">'
 							+ '<img src="img/led.png"' + '" style="width:' + size/5 + 'px;height:' + size/5 
-							+ 'px"  class="led" led="' + _grid[x][y].pos + '"  x="' + x + '" y="' + y +'"/>'
+							+ 'px"  class="led" led="' + _grid[lx][ly].pos + '"  x="' + x + '" y="' + y +'"/>'
 							+ '</td>';
 					}
 					html+= '</tr>';
