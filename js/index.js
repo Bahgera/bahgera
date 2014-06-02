@@ -62,6 +62,9 @@ var _leds = [];
 //_layout[x][y]={nb}
 var _layout = [];
 
+//tile clicked in edit layout mode = {x,y,nb}
+var _selectedTile = {};
+
 //Number of 4x4 tiles
 var _nbTiles = 1;
 
@@ -291,6 +294,10 @@ app.initialize = function() {
 	$('#colorPicker').on('taphold', switchColor);
 	//$('#tilesLayout').on('tap', layoutTapped);
 	//$('#gridSelector').on('tap', ledSelected);
+	$('#canceTile').click(closeTileMenu);
+	$('#testTile').click(testTile);
+	$('#rotateTile').click(rotateTile);
+	$('#deleteTile').click(deleteTile);
 	$('#pictureButton').click(getPicture);
 	$('#takeNew').click(takeNewPhoto);
 	$('#chooseExisting').click(chooseExistingPhoto);
@@ -618,7 +625,7 @@ function initGrid() {
 function toggleLayoutMode() {
 	_isEditMode = !_isEditMode;
 	if(_isEditMode) { 
-		$('#layoutButton').attr('style','color:yellow'); 
+		$('#layoutButton').attr('style','color:red'); 
 		$('#colorPicker').hide();
 	} else { 
 		$('#layoutButton').removeAttr('style'); 
@@ -682,10 +689,32 @@ function layoutTapped(e) {
 		//$('#tilesLayout').on('tap', layoutTapped);
 	} else if(cellClass === 'tile' || cellClass === 'led' || cellClass === 'ledCell') {
 		log('Clicked tile (' + x + ',' + y +')');
+		_selectedTile = {x:x,y:y,nb:_layout[x][y].nb};
+		$('#toolbar').hide();
+		$('#page').fadeTo(500, 0.5);
 		$('#tileMenu').slideToggle();
 	} else {
 		log('Unexpected class "' + cellClass + '"');
 	}
+}
+
+//closes the tile menu when the user clicks on Cancel
+function closeTileMenu() {
+	$('#tileMenu').slideToggle();
+	$('#toolbar').show();
+	$('#page').fadeTo(500, 1);
+}
+
+function testTile() {
+	log('Test tile ' + JSON.stringify(_selectedTile));
+}
+
+function deleteTile() {
+	log('Delete tile ' + JSON.stringify(_selectedTile));
+}
+
+function rotateTile() {
+	log('Rotate tile ' + JSON.stringify(_selectedTile));
 }
 
 
