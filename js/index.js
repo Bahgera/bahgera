@@ -53,11 +53,11 @@ var _nbLedX = 4;
 //Number of LEDs on Y axis
 var _nbLedY = 4;
 
-//grid[x][y]={pos,color}
-var _grid = [];
+//grid[nb][x][y]={pos,color}
+var _grid = []; _grid[0] = [];
 
-//leds[pos]={x,y,color}
-var _leds = [];
+//leds[nb][pos]={x,y,color}
+var _leds = []; _leds[0] = [];
 
 //_layout[x][y]={nb}
 var _layout = [];
@@ -65,7 +65,7 @@ var _layout = [];
 //tile clicked in edit layout mode = {x,y,nb}
 var _selectedTile = {};
 
-//Number of 4x4 tiles
+//Number of _nbLedX x _nbLedY tiles
 var _nbTiles = 1;
 
 //Size of the Tiles layout (X)
@@ -117,7 +117,7 @@ function buildSpinner() {
 //Generates HTML for LED grid in the Test section
 // function buildGridSelector() {
 // 	log('Building Test Grid Selector');
-// 	var html = '<table id="gridTable">';
+// 	var html = '<table id="gridSelector">';
 // 	_size = Math.min(Math.floor(($(document).height()-4)/3/(_nbLedY+1)), 
 // 		Math.floor(($(document).width()-(_nbLedX+1)*5)/(_nbLedX+1)));
 // 	log('Grid size = ' + _size);
@@ -221,17 +221,24 @@ function drawGrid(doEditLayout) {
 			html += '<tr><td style="width:' + size + 'px;height:' + size + 'px" x="-1" y="' + y +'"></td>';
 		}
 		for(var x=0;x<_nbTilesX;x++) {
-			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x][y].nb 
+			var tile = _layout[x][y].nb - 1;
+			html+= '<td x="' + x + '" y="' + y +'" nb="' + (tile+1)
 				+ '" style="width:' + size + 'px;height:' + size + 'px"';
-			if(_layout[x][y].nb > 0) {
+			if(tile >= 0) {
 				html+= ' class="tile"><table class="tile" x="' + x + '" y="' + y +'" >';
-				for(var lx=0;lx<4;lx++) {
+				for(var lx=0;lx<_nbLedX;lx++) {
 					html += '<tr>';
-					for(var ly=0;ly<4;ly++) {
-						html+= '<td led="' + _grid[lx][ly].pos 
-							+ '" style="width:' + size/4 + 'px;height:' + size/4 + 'px" x="' + x + '" y="' + y +'" class="ledCell">'
-							+ '<img src="img/led.png"' + '" style="width:' + size/4 + 'px;height:' + size/4 
-							+ 'px"  class="led" led="' + _grid[lx][ly].pos + '"  x="' + x + '" y="' + y +'"/>'
+					for(var ly=0;ly<_nbLedY;ly++) {
+						console.log(tile, lx, ly);
+						console.log(JSON.stringify(_grid));
+						console.log(JSON.stringify(_grid[tile]));
+						console.log(JSON.stringify(_grid[tile][lx]));
+						console.log(JSON.stringify(_grid[tile][lx][ly]));
+						html+= '<td led="' + _grid[tile][lx][ly].pos + '" nb="' + (tile+1) + 
+							+ '" style="width:' + size/_nbLedX + 'px;height:' + size/_nbLedY + 'px" x="' + x + '" y="' + y +'" class="ledCell">'
+							+ '<img src="img/led.png"' + '" style="width:' + size/_nbLedX + 'px;height:' + size/_nbLedY 
+							+ 'px"  class="led" led="' + _grid[tile][lx][ly].pos + '" nb="' + (tile+1) 
+							+ '"  x="' + x + '" y="' + y +'"/>'
 							+ '</td>';
 					}
 					html+= '</tr>';
@@ -281,7 +288,7 @@ app.initialize = function() {
 	
 	buildSpinner();
 	
-	initGrid();
+	initGrid(0);
 	initLayout();
 	
 	//buildGridSelector();
@@ -412,19 +419,21 @@ function setGridFromPicture(imageData){
 		setTimeout(function() {
 			var ctx=canvas.getContext("2d");
 			//the picture is resized to the LED grid size
-			var imgData=ctx.getImageData(0,0,_nbLedX,_nbLedY);
+			var imgData=ctx.getImageData(0,0,_nbLedX * _nbTiles,_nbLedY * _nbTiles);
 			var pixels = imgData.data;
-			for(var y=0;y<_nbLedY;y++) {
-				for(var x=0;x<_nbLedX;x++) {
-					var red =   pixels[((_nbLedX*x)+y)*4].toString(16);   if(red.length   === 1) { red   = '0' + red;   }
-					var green = pixels[((_nbLedX*x)+y)*4+1].toString(16); if(green.length === 1) { green = '0' + green; }
-					var blue =  pixels[((_nbLedX*x)+y)*4+2].toString(16); if(blue.length  === 1) { blue  = '0' + blue;  }
-					//We ignore the Alpha channel, only need the RGB values
-					var color = red + green + blue;
-					var pos = _grid[x][y].pos;
-					_grid[x][y].color = color;
-					_leds[pos].color = color;
-					$('#gridTable tr td[led=' + pos + ']').css({'background-color': '#' + color});
+			for(var tile=0;tile<_nbTiles;tile++) {
+				for(var y=0;y<_nbLedY;y++) {
+					for(var x=0;x<_nbLedX;x++) {
+						var red =   pixels[((_nbLedX*x)+y+tile*_nbLedX*_nbLedY)*4].toString(16);   if(red.length   === 1) { red   = '0' + red;   }
+						var green = pixels[((_nbLedX*x)+y+tile*_nbLedX*_nbLedY)*4+1].toString(16); if(green.length === 1) { green = '0' + green; }
+						var blue =  pixels[((_nbLedX*x)+y+tile*_nbLedX*_nbLedY)*4+2].toString(16); if(blue.length  === 1) { blue  = '0' + blue;  }
+						//We ignore the Alpha channel, only need the RGB values
+						var color = red + green + blue;
+						var pos = _grid[tile][x][y].pos;
+						_grid[tile][x][y].color = color;
+						_leds[tile][pos].color = color;
+						$('#gridSelector tr td[led=' + pos + ']').css({'background-color': '#' + color});
+					}
 				}
 			}
 		}, 200);
@@ -561,12 +570,14 @@ function colorPicked(e) {
 }
 
 /**
- * Set all LEDs to the color on which the user double clicked
+ * Set all LEDs to the color on which the user clicked and hold
  */
 function switchColor(e) {
 	_pickedColor = e.target.getAttribute('color');
 	log('Switch to ' + _pickedColor);
-	initGrid();
+	for(var tile=0;tile<_nbTiles;tile++) {
+		initGrid(tile);
+	}
 }
 	
 /**
@@ -574,14 +585,15 @@ function switchColor(e) {
  */
 function ledSelected(e) {
 	var ledPos = e.target.getAttribute('led');
-	if(ledPos === null) { return log('Clicked outside of LED'); }
-	log('selected led ' + ledPos);
-	var led = _leds[ledPos];
+	var tile = e.target.getAttribute('nb');
+	if(ledPos === null || tile === null) { return log('Clicked outside of LED'); }
+	log('selected led ' + ledPos + ' of tile ' + tile);
+	var led = _leds[tile-1][ledPos];
 	e.target.parentNode.removeAttribute('style');
 	e.target.parentNode.setAttribute('style','width:' + _size + 'px;height:' + _size 
 		+ 'px;background-color:#' + _pickedColor + ';color:#' + _pickedColor);
 	led.color = _pickedColor;
-	_grid[led.x][led.y].color = _pickedColor;
+	_grid[tile][led.x][led.y].color = _pickedColor;
 }
 
 /**
@@ -593,29 +605,29 @@ function ledSelected(e) {
  * 15 14 13 12
  * and where color is the color for the LED at this position, i.e. black by default
  */
-function initGrid() {
+function initGrid(tile) {
 	log('Initializing grid with color='+_pickedColor);
 	var pos = 0;
-	_leds = [];
-	_grid = [];
+	_leds[tile] = [];
+	_grid[tile] = [];
 	for(var x=0;x<_nbLedX;x++) {
 		var gridY=[];
 		for(var y=0;y<_nbLedY;y++) {
 			//log('('+(x+1)+','+(y+1)+')=>'+pos);
 			var isReverse = true;
-			var posDiv = Math.floor(pos/4);
+			var posDiv = Math.floor(pos/_nbLedX);
 			if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = false;
 			var ledPos = pos;
 			if(isReverse) {
-				ledPos = (posDiv+1)*4-(pos%4)-1;
+				ledPos = (posDiv+1)*_nbLedX-(pos%_nbLedX)-1;
 			}
 			var led = { pos:ledPos, color:_pickedColor };
 			gridY.push({ pos:ledPos, color:_pickedColor });
-			_leds.push({ x: x, y: y, color:_pickedColor });
-			if($('#gridTable tr td')) { $('#gridTable tr td').css({'background-color': '#' + _pickedColor}); }
+			_leds[tile].push({ x: x, y: y, color:_pickedColor });
+			if($('.tile tr td')) { $('.tile tr td').css({'background-color': '#' + _pickedColor}); }
 			pos++;
 		}
-		_grid.push(gridY);
+		_grid[tile].push(gridY);
 	}
 } 
 
@@ -690,6 +702,9 @@ function layoutTapped(e) {
 		}
 		_nbTiles++;
 		log('New layout: ' + JSON.stringify(_layout));
+		_grid.push([]);
+		_leds.push([]);
+		initGrid(_nbTiles - 1);
 		drawGrid(true);
 		//$('#tilesLayout').on('tap', layoutTapped);
 	} else if(cellClass === 'tile' || cellClass === 'led' || cellClass === 'ledCell') {
@@ -743,13 +758,15 @@ function rotateTile() {
  function getData() {
  	//First we get the data as a binary string
 	var data = "";
-	for(var i=0;i<_nbLedX*_nbLedY;i++) {
-// 		var isReverse = false;
-		var posDiv = Math.floor(i/4);
-// 		if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = true;
-		var color = convertColor(_leds[i].color, false);//isReverse);
-// 		log('Color['+i+'] before='+_leds[i].color+' after='+color+' ('+color.length+' bits)');
-		data+= color;
+	for(var tile=0;tile<_nbTiles;tile++) {
+		for(var i=0;i<_nbLedX*_nbLedY;i++) {
+			//var isReverse = false;
+			var posDiv = Math.floor(i/_nbLedX);
+			//if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = true;
+			var color = convertColor(_leds[tile][i].color, false);//isReverse);
+			//log('Color['+i+'] before='+_leds[i].color+' after='+color+' ('+color.length+' bits)');
+			data+= color;
+		}
 	}
 	return convertToBytes(data);
 }
