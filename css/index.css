@@ -76,6 +76,16 @@ li {
 	width: 100%;
 }
 
+#tileMenu {
+	text-align: center;
+	background-color: black;
+	color: black;
+	position: absolute;
+	top: auto;
+	bottom: 0;
+	width: 100%;
+}
+
 .menu {
 	margin: 10px;
 	padding: 10px;

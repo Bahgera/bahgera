@@ -77,9 +77,6 @@ var _nbTilesY = 1;
 //Color picked by user in colorPicker
 var _pickedColor = '000000';
 
-//Height of color cell in colorPicker
-var _colorHeight = 10;
-
 //height/width of a cell in the LED grid
 var _size = 10;
 
@@ -140,20 +137,20 @@ function buildSpinner() {
 // }
 
 //Generates HTML for the color picker in the Test section
-function buildColorPicker() {
-	log('H=' + $(document).height() + ' W=' + $(document).width());
+function drawColorPicker() {
+	log('Grid height = ' + $("#gridSelector").height());
 	var colorTable = '<table id="colorTable">';
 	var palette = ['000000','555555','AAAAAA','FFFFFF','FF0000','00FF00','0000FF','FFFF00',
 		'FF00FF','00FFFF','0055AA','55AAFF','AAFF00','FF0055','AA5500','5500FF'];
-	_colorHeight = Math.floor(($(document).height()-20) / 3 / (_nbLedY+1));
+	var colorHeight = Math.floor(($(document).height()-$("#gridSelector").height()-50) / (_nbLedY+1));
 	var width  = Math.floor(($(document).width() - 5) / _nbLedX);
-	log('Color picker height=' + _colorHeight);
+	log('Color picker height=' + colorHeight);
 	for(var i=0;i<4;i++) {
 		colorTable+= '<tr>';
 		for(var j=0;j<4;j++) {
 			var color = palette[i*4+j];
 			colorTable+='<td style="border-width:1px;border-color:black;border-style:solid;'
-				+ 'width:' + width + 'px;height:' + _colorHeight +'px;'
+				+ 'width:' + width + 'px;height:' + colorHeight +'px;'
 				+ 'background-color:#' + color + ';color:#' + color + '" '
 				+ 'color="' + color + '">-</td>';
 		}
@@ -161,6 +158,8 @@ function buildColorPicker() {
 	}
 	colorTable+= '</table>';
 	$("#colorPicker").html(colorTable);
+	$('#colorPicker').on('tap', colorPicked);
+	$('#colorPicker').on('taphold', switchColor);
 }
 
 //Generates Tile grid for Settings
@@ -257,9 +256,13 @@ function drawGrid(doEditLayout) {
 	}
 	html+='<td></td></table>';
 	$("#gridSelector").html(html);
-	$('#gridSelector').unbind('tap');
-	if(doEditLayout) { $('#gridSelector').on('tap', layoutTapped); }
-	else { $('#gridSelector').on('tap', ledSelected); }
+	$('#gridSelector').unbind('click');
+	if(doEditLayout) { 
+		$('#gridSelector').on('click', layoutTapped); 
+	} else { 
+		$('#gridSelector').on('click', ledSelected);
+		drawColorPicker(); 
+	}
 }
 
 
@@ -282,7 +285,7 @@ app.initialize = function() {
 	initLayout();
 	
 	//buildGridSelector();
-	buildColorPicker();
+	//drawColorPicker();
 	//buildTilesLayoutSelector();
 	drawGrid();
 	$('#canvas').attr('width',_nbLedX + 'px');
@@ -290,8 +293,8 @@ app.initialize = function() {
 	
 	document.addEventListener('deviceready', searchDevice, false);
 	
-	$('#colorPicker').on('tap', colorPicked);
-	$('#colorPicker').on('taphold', switchColor);
+	//$('#colorPicker').on('tap', colorPicked);
+	//$('#colorPicker').on('taphold', switchColor);
 	//$('#tilesLayout').on('tap', layoutTapped);
 	//$('#gridSelector').on('tap', ledSelected);
 	$('#canceTile').click(closeTileMenu);
