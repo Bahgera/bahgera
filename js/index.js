@@ -14,6 +14,9 @@
 
 'use strict';
 
+//true in dev mode
+var _isDebug = false;
+
 /***********************************************************************************************************************
  *
  * INITIALIZATION
@@ -78,7 +81,7 @@ var _nbTilesY = 1;
 var _pickedColor = '000000';
 
 //height/width of a cell in the LED grid
-var _size = 10;
+// var _size = 10;
 
 //true when RFDuino is processing data
 var _processing = false;
@@ -91,6 +94,8 @@ var _nbAttempts = 0;
 
 //true when editing tiles layout
 var _isEditMode = false;
+
+var _windowHeight, _windowWidth;
 
 /***********************************************************************************************************************
  *
@@ -114,36 +119,17 @@ function buildSpinner() {
 	$('#search').append(square.canvas);
 }
 
-//Generates HTML for LED grid in the Test section
-// function buildGridSelector() {
-// 	log('Building Test Grid Selector');
-// 	var html = '<table id="gridSelector">';
-// 	_size = Math.min(Math.floor(($(document).height()-4)/3/(_nbLedY+1)), 
-// 		Math.floor(($(document).width()-(_nbLedX+1)*5)/(_nbLedX+1)));
-// 	log('Grid size = ' + _size);
-// 	for(var x=0;x<_nbLedX;x++) {
-// 		html += '<tr>';
-// 		for(var y=0;y<_nbLedY;y++) {
-// 			html+= '<td led="' + _grid[x][y].pos 
-// 				+ '" style="width:' + _size + 'px;height:' + _size + 'px" class="ledCell">'
-// 				+ '<img src="img/led.png"' + '" style="width:' + _size + 'px;height:' + _size 
-// 				+ 'px"  class="led" led="' + _grid[x][y].pos + '"/>'
-// 				+ '</td>';
-// 		}
-// 		html+= '</tr>';
-// 	}
-// 	html+='</table>';
-// 	$("#gridSelector").html(html);
-// }
-
 //Generates HTML for the color picker in the Test section
 function drawColorPicker() {
-	log('Grid height = ' + $("#gridSelector").height());
 	var colorTable = '<table id="colorTable">';
 	var palette = ['000000','555555','AAAAAA','FFFFFF','FF0000','00FF00','0000FF','FFFF00',
 		'FF00FF','00FFFF','0055AA','55AAFF','AAFF00','FF0055','AA5500','5500FF'];
-	var colorHeight = Math.floor(($(document).height()-$("#gridSelector").height()-50) / (_nbLedY+1));
-	var width  = Math.floor(($(document).width() - 5) / _nbLedX);
+	var size = Math.floor(Math.min(_windowHeight/2/_nbTilesY, _windowWidth/_nbTilesX) * 0.9);
+	var colorHeight = Math.floor((_windowHeight-size*_nbTilesY*1.7-50) / 5);
+	var width  = Math.floor((_windowWidth - 5) / 4);
+	log('Doc height=' + _windowHeight);
+	log('size=' + size);
+	log('_nbTilesY=' + _nbTilesY);
 	log('Color picker height=' + colorHeight);
 	for(var i=0;i<4;i++) {
 		colorTable+= '<tr>';
@@ -162,45 +148,6 @@ function drawColorPicker() {
 	$('#colorPicker').on('taphold', switchColor);
 }
 
-//Generates Tile grid for Settings
-// function buildTilesLayoutSelector() {
-// 	log('Building Tiles Layout Selector');
-// 	var html = '<table id="tilesLayout"><tr><td></td>';
-// 	var size = Math.min($(document).height(),$(document).width()) / Math.max(_nbTilesX,_nbTilesY) / 2;
-// 	for(var x=0;x<_nbTilesX;x++) {
-// 		html+='<td x="' + x + '" y="-1" class="addTile">+</td>';
-// 	}
-// 	html+='<td></td></tr>';
-// 	for(var y=0;y<_nbTilesY;y++) {
-// 		html += '<tr><td style="width:' + size + 'px;height:' + size + 'px" x="-1" y="' + y +'" class="addTile">+</td>';
-// 		for(var x=0;x<_nbTilesX;x++) {
-// 			html+= '<td x="' + x + '" y="' + y +'" nb="' + _layout[x][y].nb 
-// 				+ '" style="width:' + size + 'px;height:' + size + 'px"';
-// 			if(_layout[x][y].nb > 0) {
-// 				html+= ' class="tile"><table>';
-// 				for(var lx=0;lx<4;lx++) {
-// 					html += '<tr>';
-// 					for(var ly=0;ly<4;ly++) {
-// 						html+= '<td style="width:' + size/5 + 'px;height:' + size/5 + 'px" class="ledCell">'
-// 							+ '<img src="img/led.png"' + '" style="width:' + size/5 + 'px;height:' + size/5 
-// 							+ 'px"  class="led" /></td>';
-// 					}
-// 					html+= '</tr>';
-// 				}
-// 				html+='</table>';
-// 			} else html+= ' class="addTile">+';
-// 			html+='</td>';
-// 		}
-// 		html+= '<td style="width:' + size + 'px;height:' + size + 'px" x="' + _nbTilesX + '" y="' + y +'" class="addTile">+</td></tr>';
-// 	}
-// 	html+='<tr><td></td>';
-// 	for(var x=0;x<_nbTilesX;x++) {
-// 		html+='<td x="' + x + '" y="' + _nbTilesY + '" class="addTile">+</td>';
-// 	}
-// 	html+='<td></td></table>';
-// 	$("#tilesLayoutArea").html(html);
-// }
-
 /**
  * Generates LED grid
  * @param {doEditLayout} true when editing the tiles layout
@@ -208,7 +155,7 @@ function drawColorPicker() {
 function drawGrid(doEditLayout) {
 	log('Draw grid');
 	var html = '<table id="gridSelector"><tr><td></td>';
-	var size = Math.floor(Math.min($(document).height()/2/ _nbTilesY, $(document).width()/_nbTilesX) * 0.9);
+	var size = Math.floor(Math.min(_windowHeight/2/_nbTilesY, _windowWidth/_nbTilesX) * 0.9);
 	for(var x=0;x<_nbTilesX;x++) {
 		if(doEditLayout) { html+='<td x="' + x + '" y="-1" class="addTile">+</td>'; }
 		else { html+='<td x="' + x + '" y="-1"></td>'; }
@@ -229,11 +176,6 @@ function drawGrid(doEditLayout) {
 				for(var lx=0;lx<_nbLedX;lx++) {
 					html += '<tr>';
 					for(var ly=0;ly<_nbLedY;ly++) {
-						console.log(tile, lx, ly);
-						console.log(JSON.stringify(_grid));
-						console.log(JSON.stringify(_grid[tile]));
-						console.log(JSON.stringify(_grid[tile][lx]));
-						console.log(JSON.stringify(_grid[tile][lx][ly]));
 						html+= '<td led="' + _grid[tile][lx][ly].pos + '" nb="' + (tile+1) + 
 							+ '" style="width:' + size/_nbLedX + 'px;height:' + size/_nbLedY + 'px" x="' + x + '" y="' + y +'" class="ledCell">'
 							+ '<img src="img/led.png"' + '" style="width:' + size/_nbLedX + 'px;height:' + size/_nbLedY 
@@ -284,6 +226,9 @@ var app = { };
 app.initialize = function() {
 	log('Initializing');
 	
+	_windowHeight = $(document).height();
+	_windowWidth = $(document).width();
+	
 	$.mobile.loading().hide();
 	
 	buildSpinner();
@@ -291,19 +236,12 @@ app.initialize = function() {
 	initGrid(0);
 	initLayout();
 	
-	//buildGridSelector();
-	//drawColorPicker();
-	//buildTilesLayoutSelector();
 	drawGrid();
 	$('#canvas').attr('width',_nbLedX + 'px');
 	$('#canvas').attr('height',_nbLedY + 'px');
 	
 	document.addEventListener('deviceready', searchDevice, false);
 	
-	//$('#colorPicker').on('tap', colorPicked);
-	//$('#colorPicker').on('taphold', switchColor);
-	//$('#tilesLayout').on('tap', layoutTapped);
-	//$('#gridSelector').on('tap', ledSelected);
 	$('#canceTile').click(closeTileMenu);
 	$('#testTile').click(testTile);
 	$('#rotateTile').click(rotateTile);
@@ -318,6 +256,13 @@ app.initialize = function() {
 	$('#settingsButton').click(showSettings);
 	$('#clearLogsButton').click(clearLogs);
 	$('#closeSettingButton').click(hideSettings);
+	
+	if(_isDebug) {
+		$('#search').hide();
+		$('#test').show();
+		$('#toolbar').show();
+		$('#settingsButton').show();
+	}
 };
 	
 app.onDiscoverDevice = function(device) {
@@ -522,6 +467,10 @@ function switchOff() {
  * Sends given data to RFDuino
  */
 function doWrite(data, cb) {
+	if(_isDebug) {
+		log('DEBUG MODE: not sending data');
+		return cb();
+	}
 	var chunk = data.substring(0, _MAXDATASIZE);
 	log('Trying to send "' + chunk + '" (' + chunk.length + ' of ' + data.length + ' bytes)');
 	if(_processing) setTimeout(function(){
@@ -590,8 +539,8 @@ function ledSelected(e) {
 	log('selected led ' + ledPos + ' of tile ' + tile);
 	var led = _leds[tile-1][ledPos];
 	e.target.parentNode.removeAttribute('style');
-	e.target.parentNode.setAttribute('style','width:' + _size + 'px;height:' + _size 
-		+ 'px;background-color:#' + _pickedColor + ';color:#' + _pickedColor);
+	e.target.parentNode.setAttribute('style', 'width:' + size/_nbLedX + 'px;height:' + size/_nbLedY + 'px;' 
+		+ 'background-color:#' + _pickedColor + ';color:#' + _pickedColor);
 	led.color = _pickedColor;
 	_grid[tile][led.x][led.y].color = _pickedColor;
 }
@@ -794,7 +743,7 @@ function convertToBytes(data) {
 		var thisByte = data.substring(i*8,(i+1)*8);
 		bData+= binToASCII(thisByte);
 	}
-	log(bData.length + ' char in ' + bData);
+	log(bData.length + ' char in ' + data);
 	return bData;
 }
 
