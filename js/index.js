@@ -15,7 +15,7 @@
 'use strict';
 
 //true in dev mode
-var _isDebug = false;
+var _isDebug = true;
 
 /***********************************************************************************************************************
  *
@@ -179,7 +179,7 @@ function drawGrid(doEditLayout) {
 					html += '<tr>';
 					for(var ly=0;ly<_nbLedY;ly++) {
 						var color = _grid[tile][lx][ly].color;
-						log('grid['+tile+']['+lx+']['+ly+'].color=' + color);
+						//log('grid['+tile+']['+lx+']['+ly+'].color=' + color);
 						html+= '<td led="' + _grid[tile][lx][ly].pos + '" nb="' + (tile+1)
 							+ '" style="width:' + size/_nbLedX + 'px;height:' + size/_nbLedY 
 							+ 'px;background-color:#' + color + ';color:#' + color 
@@ -668,6 +668,8 @@ function layoutTapped(e) {
 		_selectedTile = {x:x,y:y,nb:_layout[x][y].nb};
 		$('#toolbar').hide();
 		$('#page').fadeTo(500, 0.5);
+		if(_nbTiles === 1) { $('#deleteTile').hide(); }
+		else { $('#deleteTile').show(); }
 		$('#tileMenu').slideToggle();
 	} else {
 		log('Unexpected class "' + cellClass + '"');
@@ -687,6 +689,62 @@ function testTile() {
 
 function deleteTile() {
 	log('Delete tile ' + JSON.stringify(_selectedTile));
+	_grid.splice(_selectedTile.nb-1,1);
+	_layout[_selectedTile.x][_selectedTile.y].nb = 0;
+	if(_selectedTile.x == 0) {
+		var isEmptyColumn = true;
+		for(var i=0;i<_nbTilesY && isEmptyColumn;i++) {
+			if(_layout[0][i].nb !== 0) { isEmptyColumn = false; }
+		}
+		if(isEmptyColumn) {
+			_layout.splice(0, 1);
+			_nbTilesX--;
+		}
+	}
+	if(_selectedTile.x == _nbTilesX-1) {
+		var isEmptyColumn = true;
+		for(var i=0;i<_nbTilesY && isEmptyColumn;i++) {
+			if(_layout[_nbTilesX-1][i].nb !== 0) { isEmptyColumn = false; }
+		}
+		if(isEmptyColumn) {
+			_layout.splice(_nbTilesX-1, 1);
+			_nbTilesX--;
+		}
+	}
+	if(_selectedTile.y == 0) {
+		var isEmptyRow = true;
+		for(var i=0;i<_nbTilesX && isEmptyRow;i++) {
+			if(_layout[i][0].nb !== 0) { isEmptyRow = false; }
+		}
+		if(isEmptyRow) {
+			for(var i=0;i<_nbTilesX;i++) {
+				_layout[i].splice(0, 1);
+			}
+			_nbTilesY--;
+		}
+	}
+	if(_selectedTile.y == _nbTilesY-1) {
+		var isEmptyRow = true;
+		for(var i=0;i<_nbTilesX && isEmptyRow;i++) {
+			if(_layout[i][_nbTilesY-1].nb !== 0) { isEmptyRow = false; }
+		}
+		if(isEmptyRow) {
+			for(var i=0;i<_nbTilesX;i++) {
+				_layout[i].splice(_nbTilesY-1, 1);
+			}
+			_nbTilesY--;
+		}
+	}
+	for(var x=0;x<_nbTilesX;x++) {
+		for(var y=0;y<_nbTilesY;y++) {
+			if(_layout[x][y].nb > _selectedTile.nb) {
+				_layout[x][y].nb = _layout[x][y].nb - 1;
+			}
+		}
+	}
+	_nbTiles--;
+	drawGrid(true);
+	closeTileMenu();
 }
 
 function rotateTile() {

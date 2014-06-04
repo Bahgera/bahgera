@@ -152,6 +152,10 @@ li {
 	font-size: 2.4em;
 }
 
+.tile {
+	padding: 0px;
+}
+
 #log {
 	font-size: 0.8em;
 	text-align: left;
