@@ -95,6 +95,7 @@ var _nbAttempts = 0;
 //true when editing tiles layout
 var _isEditMode = false;
 
+//window height and width
 var _windowHeight, _windowWidth;
 
 /***********************************************************************************************************************
@@ -119,18 +120,18 @@ function buildSpinner() {
 	$('#search').append(square.canvas);
 }
 
+//Compute the length of a tile (in pixels)
+function getTileSize() {
+	return Math.floor(Math.min(_windowHeight/2/_nbTilesY, _windowWidth/_nbTilesX)*0.8);
+}
+
 //Generates HTML for the color picker in the Test section
 function drawColorPicker() {
 	var colorTable = '<table id="colorTable">';
 	var palette = ['000000','555555','AAAAAA','FFFFFF','FF0000','00FF00','0000FF','FFFF00',
 		'FF00FF','00FFFF','0055AA','55AAFF','AAFF00','FF0055','AA5500','5500FF'];
-	var size = Math.floor(Math.min(_windowHeight/2/_nbTilesY, _windowWidth/_nbTilesX) * 0.9);
-	var colorHeight = Math.floor((_windowHeight-size*_nbTilesY*1.7-50) / 5);
+	var colorHeight = Math.floor((_windowHeight*0.6-(getTileSize()+20)*_nbTilesY)/4);
 	var width  = Math.floor((_windowWidth - 5) / 4);
-	log('Doc height=' + _windowHeight);
-	log('size=' + size);
-	log('_nbTilesY=' + _nbTilesY);
-	log('Color picker height=' + colorHeight);
 	for(var i=0;i<4;i++) {
 		colorTable+= '<tr>';
 		for(var j=0;j<4;j++) {
@@ -154,8 +155,9 @@ function drawColorPicker() {
  */
 function drawGrid(doEditLayout) {
 	log('Draw grid');
-	var html = '<table id="gridSelector"><tr><td></td>';
-	var size = Math.floor(Math.min(_windowHeight/2/_nbTilesY, _windowWidth/_nbTilesX) * 0.9);
+	var html = '<table id="gridTable"><tr><td></td>';
+	var size = getTileSize();
+	if(doEditLayout) { size = size * 0.8; }
 	for(var x=0;x<_nbTilesX;x++) {
 		if(doEditLayout) { html+='<td x="' + x + '" y="-1" class="addTile">+</td>'; }
 		else { html+='<td x="' + x + '" y="-1"></td>'; }
@@ -176,8 +178,12 @@ function drawGrid(doEditLayout) {
 				for(var lx=0;lx<_nbLedX;lx++) {
 					html += '<tr>';
 					for(var ly=0;ly<_nbLedY;ly++) {
-						html+= '<td led="' + _grid[tile][lx][ly].pos + '" nb="' + (tile+1) + 
-							+ '" style="width:' + size/_nbLedX + 'px;height:' + size/_nbLedY + 'px" x="' + x + '" y="' + y +'" class="ledCell">'
+						var color = _grid[tile][lx][ly].color;
+						log('grid['+tile+']['+lx+']['+ly+'].color=' + color);
+						html+= '<td led="' + _grid[tile][lx][ly].pos + '" nb="' + (tile+1)
+							+ '" style="width:' + size/_nbLedX + 'px;height:' + size/_nbLedY 
+							+ 'px;background-color:#' + color + ';color:#' + color 
+							+ '" x="' + x + '" y="' + y +'" class="ledCell">'
 							+ '<img src="img/led.png"' + '" style="width:' + size/_nbLedX + 'px;height:' + size/_nbLedY 
 							+ 'px"  class="led" led="' + _grid[tile][lx][ly].pos + '" nb="' + (tile+1) 
 							+ '"  x="' + x + '" y="' + y +'"/>'
@@ -377,7 +383,7 @@ function setGridFromPicture(imageData){
 						var pos = _grid[tile][x][y].pos;
 						_grid[tile][x][y].color = color;
 						_leds[tile][pos].color = color;
-						$('#gridSelector tr td[led=' + pos + ']').css({'background-color': '#' + color});
+						$('#gridTable tr td[led=' + pos + ']').css({'background-color': '#' + color});
 					}
 				}
 			}
@@ -539,10 +545,11 @@ function ledSelected(e) {
 	log('selected led ' + ledPos + ' of tile ' + tile);
 	var led = _leds[tile-1][ledPos];
 	e.target.parentNode.removeAttribute('style');
+	var size = getTileSize();
 	e.target.parentNode.setAttribute('style', 'width:' + size/_nbLedX + 'px;height:' + size/_nbLedY + 'px;' 
 		+ 'background-color:#' + _pickedColor + ';color:#' + _pickedColor);
 	led.color = _pickedColor;
-	_grid[tile][led.x][led.y].color = _pickedColor;
+	_grid[tile-1][led.x][led.y].color = _pickedColor;
 }
 
 /**
