@@ -543,6 +543,8 @@ function ledSelected(e) {
 	var tile = e.target.getAttribute('nb');
 	if(ledPos === null || tile === null) { return log('Clicked outside of LED'); }
 	log('selected led ' + ledPos + ' of tile ' + tile);
+	log('Grid before:' + JSON.stringify(_grid[tile-1]));
+	log('Leds before:' + JSON.stringify(_leds[tile-1]));
 	var led = _leds[tile-1][ledPos];
 	e.target.parentNode.removeAttribute('style');
 	var size = getTileSize();
@@ -550,6 +552,8 @@ function ledSelected(e) {
 		+ 'background-color:#' + _pickedColor + ';color:#' + _pickedColor);
 	led.color = _pickedColor;
 	_grid[tile-1][led.x][led.y].color = _pickedColor;
+	log('Grid after:' + JSON.stringify(_grid[tile-1]));
+	log('Leds after:' + JSON.stringify(_leds[tile-1]));
 }
 
 /**
@@ -564,7 +568,7 @@ function ledSelected(e) {
 function initGrid(tile) {
 	log('Initializing grid with color='+_pickedColor);
 	var pos = 0;
-	_leds[tile] = [];
+	_leds[tile] = [];_leds[tile].length = _nbLedX * _nbLedY;
 	_grid[tile] = [];
 	for(var x=0;x<_nbLedX;x++) {
 		var gridY=[];
@@ -579,7 +583,7 @@ function initGrid(tile) {
 			}
 			var led = { pos:ledPos, color:_pickedColor };
 			gridY.push({ pos:ledPos, color:_pickedColor });
-			_leds[tile].push({ x: x, y: y, color:_pickedColor });
+			_leds[tile][ledPos] = { x: x, y: y, color:_pickedColor };
 			if($('.tile tr td')) { $('.tile tr td').css({'background-color': '#' + _pickedColor}); }
 			pos++;
 		}
@@ -749,6 +753,40 @@ function deleteTile() {
 
 function rotateTile() {
 	log('Rotate tile ' + JSON.stringify(_selectedTile));
+	log('Grid before:' + JSON.stringify(_grid[_selectedTile.nb-1]));
+	log('Leds before:' + JSON.stringify(_leds[_selectedTile.nb-1]));
+
+	var newGrid = [];
+	newGrid.length = _nbLedX;
+	for(var i=0;i<_nbLedY;i++) { newGrid[i]=[]; newGrid[i].length=_nbLedY; }
+	for(var i=0;i<_nbLedX*_nbLedY;i++) {
+	    //convert to x/y
+	    var x = i % _nbLedX;
+	    var y = Math.floor(i / _nbLedY);
+
+	    //find new x/y
+	    var newX = _nbLedX - y - 1;
+	    var newY = x;
+
+	    //convert back to index
+	    var newPosition = newY * _nbLedX + newX;
+	    newGrid[newX][newY] = _grid[_selectedTile.nb-1][x][y];
+	}
+	for(var x=0;x<_nbLedX;x++) {
+		for(var y=0;y<_nbLedY;y++) {
+			_grid[_selectedTile.nb-1][x][y] = newGrid[x][y];
+			_leds[_selectedTile.nb-1][_grid[_selectedTile.nb-1][x][y].pos] = { x:y, y:y, color:newGrid[x][y].color };
+		}
+	}
+
+	// for(var i=0;i<_nbLedX*_nbLedY;i++) {
+	// 	_leds[_selectedTile.nb-1][i].color = newGrid[_leds[_selectedTile.nb-1][i].x][_leds[_selectedTile.nb-1][i].y].color;
+	// 	_grid[_selectedTile.nb-1][x][y].pos = i;
+	// }
+	log('Grid after:' + JSON.stringify(_grid[_selectedTile.nb-1]));
+	log('Leds after:' + JSON.stringify(_leds[_selectedTile.nb-1]));
+	drawGrid(true);
+	closeTileMenu();
 }
 
 
