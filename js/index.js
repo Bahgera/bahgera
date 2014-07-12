@@ -331,12 +331,13 @@ function takeNewPhoto() {
 		quality : 50,
 		destinationType : Camera.DestinationType.FILE_URI,
 		sourceType : Camera.PictureSourceType.CAMERA,
-		allowEdit : true,
+		allowEdit : false,
 		encodingType: Camera.EncodingType.PNG,
-		targetWidth: _nbLedX,
-		targetHeight: _nbLedY,
+		targetWidth: _nbLedX * _nbTilesX,
+		targetHeight: _nbLedY * _nbTilesY,
 		saveToPhotoAlbum: true 
-  };
+  	};
+  	log('cameraOptions=' + JSON.stringify(cameraOptions));
 	navigator.camera.getPicture(setGridFromPicture, onCameraError, cameraOptions);
 }
 
@@ -346,12 +347,13 @@ function chooseExistingPhoto() {
 		quality : 50,
 		destinationType : Camera.DestinationType.FILE_URI,
 		sourceType : Camera.PictureSourceType.PHOTOLIBRARY,
-		allowEdit : true,
+		allowEdit : false,
 		encodingType: Camera.EncodingType.PNG,
-		targetWidth: _nbLedX,
-		targetHeight: _nbLedY,
+		targetWidth: _nbLedX * _nbTilesX,
+		targetHeight: _nbLedY * _nbTilesY,
 		saveToPhotoAlbum: false 
-  };
+  	};
+  	log('cameraOptions=' + JSON.stringify(cameraOptions));
 	navigator.camera.getPicture(setGridFromPicture, onCameraError, cameraOptions);
 }
 
@@ -370,23 +372,35 @@ function setGridFromPicture(imageData){
 		setTimeout(function() {
 			var ctx=canvas.getContext("2d");
 			//the picture is resized to the LED grid size
-			var imgData=ctx.getImageData(0,0,_nbLedX * _nbTiles,_nbLedY * _nbTiles);
+			var imgData=ctx.getImageData(0,0,_nbLedX * _nbTilesX,_nbLedY * _nbTilesY);
 			var pixels = imgData.data;
-			for(var tile=0;tile<_nbTiles;tile++) {
-				for(var y=0;y<_nbLedY;y++) {
-					for(var x=0;x<_nbLedX;x++) {
-						var red =   pixels[((_nbLedX*x)+y+tile*_nbLedX*_nbLedY)*4].toString(16);   if(red.length   === 1) { red   = '0' + red;   }
-						var green = pixels[((_nbLedX*x)+y+tile*_nbLedX*_nbLedY)*4+1].toString(16); if(green.length === 1) { green = '0' + green; }
-						var blue =  pixels[((_nbLedX*x)+y+tile*_nbLedX*_nbLedY)*4+2].toString(16); if(blue.length  === 1) { blue  = '0' + blue;  }
+			log('nbPixesl = ' + pixels.length + ' (expected ' + (_nbLedX * _nbTilesX * _nbLedY * _nbTilesY * 4) + ')');
+			// for(var tile=0;tile<_nbTiles;tile++) {
+				for(var y=0;y<_nbTilesY*_nbLedY;y++) {
+					for(var x=0;x<_nbTilesX*_nbLedX;x++) {
+						// log('x=' + x + ', y=' + y);
+						var red =   pixels[(x+y*_nbTilesX*_nbLedX)*4].toString(16);   if(red.length   === 1) { red   = '0' + red;   }
+						var green = pixels[(x+y*_nbTilesX*_nbLedX)*4+1].toString(16); if(green.length === 1) { green = '0' + green; }
+						var blue =  pixels[(x+y*_nbTilesX*_nbLedX)*4+2].toString(16); if(blue.length  === 1) { blue  = '0' + blue;  }
 						//We ignore the Alpha channel, only need the RGB values
 						var color = red + green + blue;
-						var pos = _grid[tile][x][y].pos;
-						_grid[tile][x][y].color = color;
-						_leds[tile][pos].color = color;
-						$('#gridTable tr td[led=' + pos + ']').css({'background-color': '#' + color});
+						// log('color=' + color);
+						var lx = Math.floor(x / _nbLedX);
+						var ly = Math.floor(y / _nbLedY);
+						var ledx = x % _nbLedX;
+						var ledy = y % _nbLedY;
+						// log('lx=' + lx + ', ly=' + ly);
+						var tile = _layout[lx][ly].nb;
+						log('_grid[' + (tile-1) + '][' + ledx + '][' + ledy + ']=pixels[' + (x+y*_nbTilesX*_nbLedX)*4 + ']=' + color);
+						_grid[tile-1][ledy][ledx].color = color;
+						var pos = _grid[tile-1][ledy][ledx].pos;
+						// log('pos=' + pos);
+						// log('_leds[' + (tile-1) + '][' + pos + '].color was ' + _leds[tile-1][pos].color);
+						_leds[tile-1][pos].color = color;
+						$('#gridTable tr td[led=' + pos + '][nb=' + tile + ']').css({'background-color': '#' + color});
 					}
 				}
-			}
+			// }
 		}, 200);
 	} catch(e) {
 		log(e);
@@ -694,6 +708,7 @@ function closeTileMenu() {
 	$('#page').fadeTo(500, 1);
 }
 
+//When user clicks on Move, closes the menu, show message, and keep selected tile for next action
 function moveTile() {
 	log('Move tile ' + JSON.stringify(_selectedTile));
 	_tileToMove = _selectedTile;
@@ -702,8 +717,9 @@ function moveTile() {
 	$('#message').text('Tap the target tile').show();
 }
 
+//Switch the previously tapped tile with the tile just tapped
 function switchTiles(tileDest) {
-	log('Switch tile ' + JSON.stringify(_tileToMove) + ' with tile ' + JSON.stringify(_selectedTile));
+	log('Switch tile ' + JSON.stringify(_tileToMove) + ' with tile ' + JSON.stringify(tileDest));
 
 	//Switch in _grid
 	for(var x=0;x<_nbLedX;x++) {
