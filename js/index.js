@@ -80,9 +80,6 @@ var _nbTilesY = 1;
 //Color picked by user in colorPicker
 var _pickedColor = '000000';
 
-//height/width of a cell in the LED grid
-// var _size = 10;
-
 //true when RFDuino is processing data
 var _processing = false;
 
@@ -94,6 +91,9 @@ var _nbAttempts = 0;
 
 //true when editing tiles layout
 var _isEditMode = false;
+
+//Tile that has been selected in layout to be moved
+var _tileToMove = null;
 
 //window height and width
 var _windowHeight, _windowWidth;
@@ -249,7 +249,7 @@ app.initialize = function() {
 	document.addEventListener('deviceready', searchDevice, false);
 	
 	$('#canceTile').click(closeTileMenu);
-	$('#testTile').click(testTile);
+	$('#moveTile').click(moveTile);
 	$('#rotateTile').click(rotateTile);
 	$('#deleteTile').click(deleteTile);
 	$('#pictureButton').click(getPicture);
@@ -615,12 +615,12 @@ function initLayout() {
 	_layout.push([{nb:1}]);
 }
 
-/**
- * Set all LEDs to the color on which the user double clicked
- */
+//Handles tap on layout
 function layoutTapped(e) {
 	var x = parseInt(e.target.getAttribute('x')); 
 	var y = parseInt(e.target.getAttribute('y'));
+	var lx = parseInt(e.target.getAttribute('lx')); 
+	var ly = parseInt(e.target.getAttribute('ly'));
 	var cellClass = e.target.getAttribute('class');
 	log('Tapped ' + cellClass + ' at (' + x + ',' + y + '), _nbTilesX=' + _nbTilesX + ', nbTilesY=' + _nbTilesY);
 	if(cellClass === 'addTile') {
@@ -670,11 +670,18 @@ function layoutTapped(e) {
 	} else if(cellClass === 'tile' || cellClass === 'led' || cellClass === 'ledCell') {
 		log('Clicked tile (' + x + ',' + y +')');
 		_selectedTile = {x:x,y:y,nb:_layout[x][y].nb};
-		$('#toolbar').hide();
-		$('#page').fadeTo(500, 0.5);
-		if(_nbTiles === 1) { $('#deleteTile').hide(); }
-		else { $('#deleteTile').show(); }
-		$('#tileMenu').slideToggle();
+		if(_tileToMove) {
+			switchTiles(_selectedTile);
+			_tileToMove = null;
+			$('#toolbar').show();
+			$('#message').hide();
+		} else {
+			$('#toolbar').hide();
+			$('#page').fadeTo(500, 0.5);
+			if(_nbTiles === 1) { $('#deleteTile').hide(); }
+			else { $('#deleteTile').show(); }
+			$('#tileMenu').slideToggle();
+		}
 	} else {
 		log('Unexpected class "' + cellClass + '"');
 	}
@@ -687,8 +694,35 @@ function closeTileMenu() {
 	$('#page').fadeTo(500, 1);
 }
 
-function testTile() {
-	log('Test tile ' + JSON.stringify(_selectedTile));
+function moveTile() {
+	log('Move tile ' + JSON.stringify(_selectedTile));
+	_tileToMove = _selectedTile;
+	closeTileMenu();
+	$('#toolbar').hide();
+	$('#message').text('Tap the target tile').show();
+}
+
+function switchTiles(tileDest) {
+	log('Switch tile ' + JSON.stringify(_tileToMove) + ' with tile ' + JSON.stringify(_selectedTile));
+
+	//Switch in _grid
+	for(var x=0;x<_nbLedX;x++) {
+		for(var y=0;y<_nbLedY;y++) {
+			var gridDestBefore = _grid[tileDest.nb-1][x][y];
+			_grid[tileDest.nb-1][x][y] = _grid[_tileToMove.nb-1][x][y];
+			_grid[_tileToMove.nb-1][x][y] = gridDestBefore;
+		}
+	}
+
+	//Switch in _leds
+	for(var pos=0;pos<_nbLedX*_nbLedY;pos++) {
+		var ledDest = _leds[tileDest.nb-1][pos];
+		_leds[tileDest.nb-1][pos] = _leds[_tileToMove.nb-1][pos];
+		_leds[_tileToMove.nb-1][pos] = ledDest;
+	}
+
+	//Refresh UI
+	drawGrid(true);
 }
 
 function deleteTile() {
@@ -820,7 +854,13 @@ function rotateTile() {
 			data+= color;
 		}
 	}
-	return convertToBytes(data);
+	data = convertToBytes(data);
+	var size = data.length.toString(16);
+	if(size.length == 2) { size = '00' + size; }
+	if(size.length == 3) { size = '0' + size; }
+	log('size=' + size);
+	data = size + data;
+	return data;
 }
 
 //Converts given binary string to a string of 2 characters, from which ASCCI values RFDuino can retrieve the original
