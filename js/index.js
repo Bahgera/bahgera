@@ -15,7 +15,7 @@
 'use strict';
 
 //true in dev mode
-var _isDebug = true;
+var _isDebug = false;
 
 /***********************************************************************************************************************
  *
@@ -60,7 +60,7 @@ var _nbLedX = 4;
 var _nbLedY = 4;
 
 //grid[nb][x][y]={pos,color}
-var _grid = []; _grid[0] = [];
+var _grid = null;///[]; _grid[0] = [];
 
 //leds[nb][pos]={x,y,color}
 var _leds = []; _leds[0] = [];
@@ -106,6 +106,27 @@ var _windowHeight, _windowWidth;
  * UI INIT FUNCTIONS
  *
  **********************************************************************************************************************/
+
+ function loadVars() {
+ 	try{
+		_grid = JSON.parse(localStorage.getItem('bahgera.grid#' + _uuid));
+		_layout = JSON.parse(localStorage.getItem('bahgera.layout#' + _uuid));
+		_leds = JSON.parse(localStorage.getItem('bahgera.leds#' + _uuid));
+	} catch(e){
+		log('Failed to parse variables from storage');
+	}
+	if(!_grid || !_layout || !_leds || !_grid[0] || !_leds[0]) {
+	    _grid = []; _grid[0] = [];
+	    _leds = []; _leds[0] = [];
+	    _layout = [];
+		initGrid(0);
+		initLayout();
+	} else {
+		log("_layout=" + JSON.stringify(_layout));
+		log("_grid=" + JSON.stringify(_grid));
+		log("_leds=" + JSON.stringify(_leds));
+	}
+ }
  
 
 //Draws search bar when searching device
@@ -161,9 +182,6 @@ function drawGrid(doEditLayout) {
 	localStorage.setItem('bahgera.grid#' + _uuid, JSON.stringify(_grid));
 	localStorage.setItem('bahgera.layout#' + _uuid, JSON.stringify(_layout));
 	localStorage.setItem('bahgera.leds#' + _uuid, JSON.stringify(_leds));
-	localStorage.setItem('bahgera.nbTiles#' + _uuid, _nbTiles);
-	localStorage.setItem('bahgera.nbTilesX#' + _uuid, _nbTilesX);
-	localStorage.setItem('bahgera.nbTilesY#' + _uuid, _nbTilesY);
 	var html = '<table id="gridTable"><tr><td></td>';
 	var size = getTileSize();
 	if(doEditLayout) { size = size * 0.8; }
@@ -248,34 +266,13 @@ app.initialize = function() {
 	
 	buildSpinner();
 
-	var grid = null;
-	var layout = null;
-	var leds = null;
-	_nbTiles = localStorage.getItem('bahgera.nbTiles#' + _uuid); if(_nbTiles === 'null') { _nbTiles = 1; }
-	_nbTilesX = localStorage.getItem('bahgera.nbTilesX#' + _uuid); if(_nbTilesX === 'null') { _nbTilesX = 1; }
-	_nbTilesY = localStorage.getItem('bahgera.nbTilesY#' + _uuid); if(_nbTilesY === 'null') { _nbTilesY = 1; }
-	try {
-		grid = JSON.parse(localStorage.getItem('bahgera.grid#' + _uuid));
-		layout = JSON.parse(localStorage.getItem('bahgera.layout#' + _uuid));
-		leds = JSON.parse(localStorage.getItem('bahgera.leds#' + _uuid));
-	} catch(e) {
-		log(e);
-	}
-	if(grid && layout && leds) { 
-		_grid = grid; 
-		_layout = layout;
-		_leds = leds;
-	} else {
-		initGrid(0);
-		initLayout();
-	}
-	log('_grid=' + JSON.stringify(_grid));
-	log('_nbTiles=' + _nbTiles);
+	loadVars();
 	
 	drawGrid();
 	$('#canvas').attr('width',_nbLedX + 'px');
 	$('#canvas').attr('height',_nbLedY + 'px');
 	
+  log('Adding deviceready listener');
 	document.addEventListener('deviceready', searchDevice, false);
 	
 	$('#canceTile').click(closeTileMenu);
@@ -405,26 +402,32 @@ function setGridFromPicture(imageData){
 			var imgData=ctx.getImageData(0,0,_nbLedX * _nbTilesX,_nbLedY * _nbTilesY);
 			var pixels = imgData.data;
 			log('nbPixesl = ' + pixels.length + ' (expected ' + (_nbLedX * _nbTilesX * _nbLedY * _nbTilesY * 4) + ')');
-			for(var y=0;y<_nbTilesY*_nbLedY;y++) {
-				for(var x=0;x<_nbTilesX*_nbLedX;x++) {
-					var red =   pixels[(x+y*_nbTilesX*_nbLedX)*4].toString(16);   if(red.length   === 1) { red   = '0' + red;   }
-					var green = pixels[(x+y*_nbTilesX*_nbLedX)*4+1].toString(16); if(green.length === 1) { green = '0' + green; }
-					var blue =  pixels[(x+y*_nbTilesX*_nbLedX)*4+2].toString(16); if(blue.length  === 1) { blue  = '0' + blue;  }
-					//We ignore the Alpha channel, only need the RGB values
-					var color = red + green + blue;
-					var lx = Math.floor(x / _nbLedX);
-					var ly = Math.floor(y / _nbLedY);
-					var ledx = x % _nbLedX;
-					var ledy = y % _nbLedY;
-					var tile = _layout[lx][ly].nb;
-					_grid[tile-1][ledy][ledx].color = color;
-					var pos = _grid[tile-1][ledy][ledx].pos;
-					_leds[tile-1][pos].color = color;
-					$('#gridTable tr td[led=' + pos + '][nb=' + tile + ']').css({'background-color': '#' + color});
+			// for(var tile=0;tile<_nbTiles;tile++) {
+				for(var y=0;y<_nbTilesY*_nbLedY;y++) {
+					for(var x=0;x<_nbTilesX*_nbLedX;x++) {
+						// log('x=' + x + ', y=' + y);
+						var red =   pixels[(x+y*_nbTilesX*_nbLedX)*4].toString(16);   if(red.length   === 1) { red   = '0' + red;   }
+						var green = pixels[(x+y*_nbTilesX*_nbLedX)*4+1].toString(16); if(green.length === 1) { green = '0' + green; }
+						var blue =  pixels[(x+y*_nbTilesX*_nbLedX)*4+2].toString(16); if(blue.length  === 1) { blue  = '0' + blue;  }
+						//We ignore the Alpha channel, only need the RGB values
+						var color = red + green + blue;
+						// log('color=' + color);
+						var lx = Math.floor(x / _nbLedX);
+						var ly = Math.floor(y / _nbLedY);
+						var ledx = x % _nbLedX;
+						var ledy = y % _nbLedY;
+						// log('lx=' + lx + ', ly=' + ly);
+						var tile = _layout[lx][ly].nb;
+						log('_grid[' + (tile-1) + '][' + ledx + '][' + ledy + ']=pixels[' + (x+y*_nbTilesX*_nbLedX)*4 + ']=' + color);
+						_grid[tile-1][ledy][ledx].color = color;
+						var pos = _grid[tile-1][ledy][ledx].pos;
+						// log('pos=' + pos);
+						// log('_leds[' + (tile-1) + '][' + pos + '].color was ' + _leds[tile-1][pos].color);
+						_leds[tile-1][pos].color = color;
+						$('#gridTable tr td[led=' + pos + '][nb=' + tile + ']').css({'background-color': '#' + color});
+					}
 				}
-			}
-			localStorage.setItem('bahgera.grid#' + _uuid, JSON.stringify(_grid));
-			localStorage.setItem('bahgera.leds#' + _uuid, JSON.stringify(_leds));
+			// }
 		}, 200);
 	} catch(e) {
 		log(e);
@@ -443,7 +446,7 @@ function setGridFromPicture(imageData){
  * Attempts to discover RFDuino devices 
  */
 function searchDevice() {
-	//log('Searching device...');
+	log('Searching device...');
 	rfduino.discover(_searchDelay, app.onDiscoverDevice, app.onError);
 	setTimeout(function(){
 		if(!_found) { searchDevice(); }
@@ -459,27 +462,7 @@ function doConnect(uuid) {
 		log('Connected');
 		_connected = true;
 		_uuid = uuid;
-		var grid = null;
-		var layout = null;
-		var leds = null;
-		try {
-			grid = JSON.parse(localStorage.getItem('bahgera.grid#' + _uuid));
-			layout = JSON.parse(localStorage.getItem('bahgera.layout#' + _uuid));
-			leds = JSON.parse(localStorage.getItem('bahgera.leds#' + _uuid));
-			_nbTiles = localStorage.getItem('bahgera.nbTiles#' + _uuid);
-			_nbTilesX = localStorage.getItem('bahgera.nbTilesX#' + _uuid);
-			_nbTilesY = localStorage.getItem('bahgera.nbTilesY#' + _uuid);
-		} catch(e) {
-			log(e);
-		}
-		if(grid && layout && leds) { 
-			_grid = grid; 
-			_layout = layout;
-			_leds = leds;
-		} else {
-			initGrid(0);
-			initLayout();
-		}
+		loadVars();
 		drawGrid();
 		$("#log").hide();
 		$('#search').hide();
@@ -615,8 +598,6 @@ function ledSelected(e) {
 	_grid[tile-1][led.x][led.y].color = _pickedColor;
 	log('Grid after:' + JSON.stringify(_grid[tile-1]));
 	log('Leds after:' + JSON.stringify(_leds[tile-1]));
-	localStorage.setItem('bahgera.grid#' + _uuid, JSON.stringify(_grid));
-	localStorage.setItem('bahgera.leds#' + _uuid, JSON.stringify(_leds));
 }
 
 /**
@@ -629,14 +610,17 @@ function ledSelected(e) {
  * and where color is the color for the LED at this position, i.e. black by default
  */
 function initGrid(tile) {
-	log('Initializing grid with color='+_pickedColor);
+	log('Initializing grid with color='+_pickedColor + ' for tile=' + tile);
 	var pos = 0;
+  log('Init _leds');
 	_leds[tile] = [];_leds[tile].length = _nbLedX * _nbLedY;
+  log('Init _grid');
 	_grid[tile] = [];
+  log('Start initGrid');
 	for(var x=0;x<_nbLedX;x++) {
 		var gridY=[];
 		for(var y=0;y<_nbLedY;y++) {
-			//log('('+(x+1)+','+(y+1)+')=>'+pos);
+			log('('+(x+1)+','+(y+1)+')=>'+pos);
 			var isReverse = true;
 			var posDiv = Math.floor(pos/_nbLedX);
 			if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = false;
@@ -652,8 +636,6 @@ function initGrid(tile) {
 		}
 		_grid[tile].push(gridY);
 	}
-	localStorage.setItem('bahgera.grid#' + _uuid, JSON.stringify(_grid));
-	localStorage.setItem('bahgera.leds#' + _uuid, JSON.stringify(_leds));
 } 
 
 
@@ -677,6 +659,7 @@ function toggleLayoutMode() {
 }
 
 function initLayout() {
+  log('Initializing layout');
 	_layout.push([{nb:1}]);
 }
 
