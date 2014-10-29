@@ -43,9 +43,10 @@ On Windows platform, other commands might be necessary. Please refer to <a href=
 5. Edit Classes/MainViewController.m
 
 6. Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
-<div><code>- (void)viewWillAppear:(BOOL)animated</code></div>
-<div><code>{</code></div>
-<div><code>    // View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),</code></div>
+<pre>
+<code>- (void)viewWillAppear:(BOOL)animated
+	{
+		// View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),</code></pre>
 <div><code>    // you can do so here.</code></div>
 <div><code>    //Lower screen 20px on ios 7</code></div>
 <div><code>    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7) {</code></div>
@@ -56,5 +57,6 @@ On Windows platform, other commands might be necessary. Please refer to <a href=
 <div><code>    }</code></div>
 <div><code>    [super viewWillAppear:animated];</code></div>
 <div><code>}</code></div>
+</pre>
 
 7. Run the project on your iPhone
