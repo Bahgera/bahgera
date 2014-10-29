@@ -44,7 +44,7 @@ On Windows platform, other commands might be necessary. Please refer to <a href=
 6. Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
 
 	<code>- (void)viewWillAppear:(BOOL)animated</code>
-	<code>
+
 	{
 		// View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),
 		// you can do so here.
@@ -57,7 +57,6 @@ On Windows platform, other commands might be necessary. Please refer to <a href=
 		}
 		[super viewWillAppear:animated];
 	}
-</code>
 
 
 7. Run the project on your iPhone
