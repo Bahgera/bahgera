@@ -17,7 +17,7 @@
 	<div><code>cordova platform add android</code></div>
     <div><code>cordova platform add blackberry10</code></div>
     <div><code>cordova platform add firefoxos</code></div>
-<br>On Windows platform, other commands might be necessary. Please refer to <a href="http://cordova.apache.org/docs/en/4.0.0//guide_cli_index.md.html#The%20Command-Line%20Interface">Apache Cordova documentation</a>.
+On Windows platform, other commands might be necessary. Please refer to <a href="http://cordova.apache.org/docs/en/4.0.0//guide_cli_index.md.html#The%20Command-Line%20Interface">Apache Cordova documentation</a>.
 
 3. Add Camera plugin:
 <code>cordova plugin add org.apache.cordova.camera</code>
@@ -43,20 +43,18 @@
 5. Edit Classes/MainViewController.m
 
 6. Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
-<code>
-<br>- (void)viewWillAppear:(BOOL)animated
-<br>{
-<br>    // View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),
-<br>    // you can do so here.
-<br>    //Lower screen 20px on ios 7
-<br>    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7) {
-<br>        CGRect viewBounds = [self.view bounds];
-<br>        viewBounds.origin.y = 20;
-<br>        viewBounds.size.height = viewBounds.size.height - 20;
-<br>        self.webView.frame = viewBounds;
-<br>    }
-<br>    [super viewWillAppear:animated];
-<br>}
-</code>
+<div><code>- (void)viewWillAppear:(BOOL)animated</code></div>
+<div><code>{</code></div>
+<div><code>    // View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),</code></div>
+<div><code>    // you can do so here.</code></div>
+<div><code>    //Lower screen 20px on ios 7</code></div>
+<div><code>    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7) {</code></div>
+<div><code>        CGRect viewBounds = [self.view bounds];</code></div>
+<div><code>        viewBounds.origin.y = 20;</code></div>
+<div><code>        viewBounds.size.height = viewBounds.size.height - 20;</code></div>
+<div><code>        self.webView.frame = viewBounds;</code></div>
+<div><code>    }</code></div>
+<div><code>    [super viewWillAppear:animated];</code></div>
+<div><code>}</code></div>
 
 7. Run the project on your iPhone
