@@ -13,11 +13,11 @@
 
 2. Go to the bahgera-cordova and add your platform:
 <code>
-	<br/>cordova platform add ios
-	<br/>cordova platform add amazon-fireos
-	<br/>cordova platform add android
-    <br>cordova platform add blackberry10
-    <br>cordova platform add firefoxos
+	<div>cordova platform add ios</div>
+	<div>cordova platform add amazon-fireos</div>
+	<div>cordova platform add android</div>
+    <div>cordova platform add blackberry10</div>
+    <div>cordova platform add firefoxos</div>
 </code>
 <br>On Windows platform, other commands might be necessary. Please refer to <a href="http://cordova.apache.org/docs/en/4.0.0//guide_cli_index.md.html#The%20Command-Line%20Interface">Apache Cordova documentation</a>.
 
