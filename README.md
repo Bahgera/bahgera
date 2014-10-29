@@ -1,12 +1,11 @@
-<h1>bahgera</h1>
+# bahgera
 
-<h2>Requirements</h2>
-<ul>
-	<li><a href="http://cordova.apache.org/">Apache Cordova</a></li>
-	<li><a href="http://www.rfduino.com/">RFDuino</a></li>
-</ul>
+## Requirements
 
-<h2>Setup</h2>
+* <a href="http://cordova.apache.org/">Apache Cordova</a>
+* <a href="http://www.rfduino.com/">RFDuino</a>
+
+## Setup
 
 1. Create cordova project:
 <code>cordova create bahgera-cordova com.bahgera Bahgera</code>
@@ -43,10 +42,12 @@ On Windows platform, other commands might be necessary. Please refer to <a href=
 5. Edit Classes/MainViewController.m
 
 6. Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
-<pre>
-<code>- (void)viewWillAppear:(BOOL)animated
+
+	- (void)viewWillAppear:(BOOL)animated
 	{
-		// View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),</code></pre>
+		// View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),
+	}
+	
 <div><code>    // you can do so here.</code></div>
 <div><code>    //Lower screen 20px on ios 7</code></div>
 <div><code>    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7) {</code></div>
