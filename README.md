@@ -13,9 +13,9 @@
 
 2. Go to the bahgera-cordova and add your platform:
 <code>
-	<br>cordova platform add ios
-	<br>cordova platform add amazon-fireos
-	<br>cordova platform add android
+	<br/>cordova platform add ios
+	<br/>cordova platform add amazon-fireos
+	<br/>cordova platform add android
     <br>cordova platform add blackberry10
     <br>cordova platform add firefoxos
 </code>
