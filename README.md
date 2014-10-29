@@ -13,13 +13,13 @@
 
 2. Go to the bahgera-cordova and add your platform:
 <code>
-	cordova platform add ios
-	cordova platform add amazon-fireos
-	cordova platform add android
-    cordova platform add blackberry10
-    cordova platform add firefoxos
+	<br>cordova platform add ios
+	<br>cordova platform add amazon-fireos
+	<br>cordova platform add android
+    <br>cordova platform add blackberry10
+    <br>cordova platform add firefoxos
 </code>
-On Windows platform, other commands might be necessary. Please refer to <a href="http://cordova.apache.org/docs/en/4.0.0//guide_cli_index.md.html#The%20Command-Line%20Interface">Apache Cordova documentation</a>.
+<br>On Windows platform, other commands might be necessary. Please refer to <a href="http://cordova.apache.org/docs/en/4.0.0//guide_cli_index.md.html#The%20Command-Line%20Interface">Apache Cordova documentation</a>.
 
 3. Add Camera plugin:
 <code>cordova plugin add org.apache.cordova.camera</code>
@@ -40,20 +40,20 @@ On Windows platform, other commands might be necessary. Please refer to <a href=
 
 3. Edit Classes/MainViewController.m
 
-4. Replace the - (void)viewWillAppear:(BOOL)animated method with:
+4. Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
 <code>
-- (void)viewWillAppear:(BOOL)animated
-{
-    // View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),
-    // you can do so here.
-    //Lower screen 20px on ios 7
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7) {
-        CGRect viewBounds = [self.view bounds];
-        viewBounds.origin.y = 20;
-        viewBounds.size.height = viewBounds.size.height - 20;
-        self.webView.frame = viewBounds;
-    }
-    [super viewWillAppear:animated];
-}
+<br>- (void)viewWillAppear:(BOOL)animated
+<br>{
+<br>    // View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),
+<br>    // you can do so here.
+<br>    //Lower screen 20px on ios 7
+<br>    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7) {
+<br>        CGRect viewBounds = [self.view bounds];
+<br>        viewBounds.origin.y = 20;
+<br>        viewBounds.size.height = viewBounds.size.height - 20;
+<br>        self.webView.frame = viewBounds;
+<br>    }
+<br>    [super viewWillAppear:animated];
+<br>}
 </code>
 
