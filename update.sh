@@ -1,3 +1,3 @@
-cp index.html cordova/platforms/ios/www
-cp js/* cordova/platforms/ios/www/js
-cp css/* cordova/platforms/ios/www/css
+cp index.html ../bahgera-cordova/platforms/ios/www
+cp js/* ../bahgera-cordova/platforms/ios/www/js
+cp css/* ../bahgera-cordova/platforms/ios/www/css
