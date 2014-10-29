@@ -43,20 +43,21 @@ On Windows platform, other commands might be necessary. Please refer to <a href=
 
 6. Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
 
-	<code>- (void)viewWillAppear:(BOOL)animated</code>
-
-	{
-		// View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),
-		// you can do so here.
-		//Lower screen 20px on ios 7
-		if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7) {
-			CGRect viewBounds = [self.view bounds];
-			viewBounds.origin.y = 20;
-			viewBounds.size.height = viewBounds.size.height - 20;
-			self.webView.frame = viewBounds;
-		}
-		[super viewWillAppear:animated];
+```
+- (void)viewWillAppear:(BOOL)animated
+{
+	// View defaults to full size.  If you want to customize the view's size, or its subviews (e.g. webView),
+	// you can do so here.
+	//Lower screen 20px on ios 7
+	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7) {
+		CGRect viewBounds = [self.view bounds];
+		viewBounds.origin.y = 20;
+		viewBounds.size.height = viewBounds.size.height - 20;
+		self.webView.frame = viewBounds;
 	}
+	[super viewWillAppear:animated];
+}
+```
 
 
 7. Run the project on your iPhone
