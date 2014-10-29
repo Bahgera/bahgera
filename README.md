@@ -36,11 +36,15 @@
 
 1. Replace the bahgera-cordova/config.xml with bahgera/xcode/config.xml
 
-2. Open bahgera-cordova/platforms/ios/Bahgera.xcodeproj
+2. Replaces all images in bahgera-cordova/platforms/ios/Bahgers/Resources/icons with those in bahgera/xcode/icons
 
-3. Edit Classes/MainViewController.m
+3. Replaces all images in bahgera-cordova/platforms/ios/Bahgers/Resources/splash with those in bahgera/xcode/splash
 
-4. Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
+4. Open bahgera-cordova/platforms/ios/Bahgera.xcodeproj
+
+5. Edit Classes/MainViewController.m
+
+6. Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
 <code>
 <br>- (void)viewWillAppear:(BOOL)animated
 <br>{
@@ -57,3 +61,4 @@
 <br>}
 </code>
 
+7. Run the project on your iPhone
