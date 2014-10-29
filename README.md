@@ -12,13 +12,11 @@
 <code>cordova create bahgera-cordova com.bahgera Bahgera</code>
 
 2. Go to the bahgera-cordova and add your platform:
-<code>
-	<div>cordova platform add ios</div>
-	<div>cordova platform add amazon-fireos</div>
-	<div>cordova platform add android</div>
-    <div>cordova platform add blackberry10</div>
-    <div>cordova platform add firefoxos</div>
-</code>
+	<div><code>cordova platform add ios</code></div>
+	<div><code>cordova platform add amazon-fireos</code></div>
+	<div><code>cordova platform add android</code></div>
+    <div><code>cordova platform add blackberry10</code></div>
+    <div><code>cordova platform add firefoxos</code></div>
 <br>On Windows platform, other commands might be necessary. Please refer to <a href="http://cordova.apache.org/docs/en/4.0.0//guide_cli_index.md.html#The%20Command-Line%20Interface">Apache Cordova documentation</a>.
 
 3. Add Camera plugin:
