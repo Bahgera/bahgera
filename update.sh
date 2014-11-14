@@ -1,3 +1,3 @@
-cp index.html ../bahgera-cordova/platforms/ios/www
-cp js/* ../bahgera-cordova/platforms/ios/www/js
-cp css/* ../bahgera-cordova/platforms/ios/www/css
+cp www/index.html platforms/ios/www/
+cp www/js/* platforms/ios/www/js/
+cp www/css/* platforms/ios/www/css/

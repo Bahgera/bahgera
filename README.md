@@ -5,43 +5,43 @@
 * <a href="http://cordova.apache.org/">Apache Cordova</a>
 * <a href="http://www.rfduino.com/">RFDuino</a>
 
-## Setup
+## iOS Setup
 
-1. Create cordova project:
-<code>cordova create bahgera-cordova com.bahgera Bahgera</code>
+Install Cordova
 
-2. Go to the bahgera-cordova and add your platform:
-	<div><code>cordova platform add ios</code></div>
-	<div><code>cordova platform add amazon-fireos</code></div>
-	<div><code>cordova platform add android</code></div>
-    <div><code>cordova platform add blackberry10</code></div>
-    <div><code>cordova platform add firefoxos</code></div>
-On Windows platform, other commands might be necessary. Please refer to <a href="http://cordova.apache.org/docs/en/4.0.0//guide_cli_index.md.html#The%20Command-Line%20Interface">Apache Cordova documentation</a>.
+    $ npm install cordova -g
+    
 
-3. Add Camera plugin:
-<code>cordova plugin add org.apache.cordova.camera</code>
+From Bahgera directory:
 
-4. Add RFduino plugin:
-<code>cordova plugin add com.megster.cordova.rfduino</code>
+    $ cordova platform add ios
 
-5. Replace the content of bahgera-cordova/www with the content of this repository. You may use the update.sh script after adapting it to your folder structure.
 
-6. Build the cordova project:
-<code>cordova build</code>
+Install the rfduino plugin
 
-<h2>iOS Deployment</h2>
+    $ cordova plugin add com.megster.cordova.rfduino
+    
 
-1. Replace the bahgera-cordova/config.xml with bahgera/xcode/config.xml
+Install the Camera plugin
 
-2. Replaces all images in bahgera-cordova/platforms/ios/Bahgers/Resources/icons with those in bahgera/xcode/icons
+    $ cordova plugin add org.apache.cordova.camera
+    
 
-3. Replaces all images in bahgera-cordova/platforms/ios/Bahgers/Resources/splash with those in bahgera/xcode/splash
+Replace default images with Bahgera images
 
-4. Open bahgera-cordova/platforms/ios/Bahgera.xcodeproj
+    $ rm platforms/ios/Bahgera/Resources/icons/*
+    $ rm platforms/ios/Bahgera/Resources/splash/*
+    $ cp iOS/icons/* platforms/ios/Bahgera/Resources/icons/
+    $ cp iOS/splash/* platforms/ios/Bahgera/Resources/splash/
 
-5. Edit Classes/MainViewController.m
+Open Xcode project in Xcode
 
-6. Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
+    $ open platforms/ios/Bahgera.xcodeproj
+
+
+In Xcode, edit the Classes/MainViewController.m file
+
+Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
 
 ```
 - (void)viewWillAppear:(BOOL)animated
@@ -59,5 +59,16 @@ On Windows platform, other commands might be necessary. Please refer to <a href=
 }
 ```
 
+Deploy to your iPhone
 
-7. Run the project on your iPhone
+## Android Setup
+
+
+    $ cd cordova-plugin-rfduino/examples/button
+    $ cordova platform add android
+    $ cordova plugin add com.megster.cordova.rfduino
+    $ cordova run
+
+## Usage
+
+TBD

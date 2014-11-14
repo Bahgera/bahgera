@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Bahgera</title>
+		
+		<!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 
+		<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+		-->
+		<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, target-densitydpi=device-dpi" />
+		
+		<link rel="stylesheet" href="css/index.css" />
+		<!--link rel="stylesheet" href="lib/jquery/css/themes/default/jquery.mobile-1.4.0.min.css" /-->
+		<link rel="stylesheet" href="lib/font-awesome-4.0.3/css/font-awesome.min.css">
+		
+		<script src="lib/jquery/js/jquery.js"></script>
+		<script src="lib/jquery/js/jquery.mobile-1.4.0.js"></script>
+		<script src="lib/zlib.js"></script>
+		<script src="lib/png.js"></script>
+		<script src="lib/sonic.js"></script>
+		<script src="js/index.js"></script>
+		<script src="cordova.js"></script>
+	</head>
+	<body>
+		<div>
+			
+			<div id="search" class="spinner">Searching device!...<br></div>
+			
+			<div id="page" class="main">
+				<div id="test" style="display:none">
+					<div id="gridSelector"></div>
+					<div id="colorPicker"></div>
+				</div>
+				<div id="settings" style="display:none">
+					<div id="log" ></div>
+				</div>
+			</div>
+			
+			<div id="tileMenu" style="display:none">
+				<div id="rotateTile" class="menu">Rotate counter-clockwise</div>
+				<div id="moveTile" class="menu">Move</div>
+				<div id="deleteTile" class="menu">Delete</div>
+				<div id="canceTile" class="menu">Cancel</div>
+			</div>
+			
+			<div id="photoMenu" style="display:none">
+				<div id="takeNew" class="menu">Take new photo</div>
+				<div id="chooseExisting" class="menu">Choose existing photo</div>
+				<div id="cancelPhoto" class="menu">Cancel</div>
+			</div>
+			
+			<div class="bottom">
+				<table id="toolbar" class="bottombar" style="display:none">
+					<tr>
+						<td id="pictureButton"><i class="fa fa-camera fa-lg"></i></td>
+						<td id="sendButton"><i class="fa fa-lightbulb-o fa-lg"></i></td>
+						<td id="offButton"><i class="fa fa-power-off fa-lg"></i></td>
+						<td id="layoutButton"><i class="fa fa-wrench fa-lg"></i></td>
+						<td id="settingsButton"><i class="fa fa-gear fa-lg"></i></td>
+					</tr>
+				</table>
+				<table id="settingsBar" class="bottombar" style="display:none">
+					<tr>
+						<td id="clearLogsButton"><i class="fa fa-eraser fa-lg"></i></td>
+						<td id="closeSettingButton"><i class="fa fa-sign-out fa-lg"></i></td>
+					</tr>
+				</table>
+				<div id="message" class="bottombar" style="display:none">
+			</div>
+			
+			<div class="canvas" style="display:none"><canvas id="canvas" class="canvas"></canvas></div>
+			
+		</div>
+	</body>
+</html>

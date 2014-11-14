@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-'use strict';
-
 //true in dev mode
 var _isDebug = false;
 
@@ -272,7 +270,7 @@ app.initialize = function() {
 	$('#canvas').attr('width',_nbLedX + 'px');
 	$('#canvas').attr('height',_nbLedY + 'px');
 	
-  log('Adding deviceready listener');
+  	log('Adding deviceready listener');
 	document.addEventListener('deviceready', searchDevice, false);
 	
 	$('#canceTile').click(closeTileMenu);
@@ -447,7 +445,11 @@ function setGridFromPicture(imageData){
  */
 function searchDevice() {
 	log('Searching device...');
-	rfduino.discover(_searchDelay, app.onDiscoverDevice, app.onError);
+	try{
+		rfduino.discover(_searchDelay, app.onDiscoverDevice, app.onError);
+	} catch(e) {
+		log(e);
+	}
 	setTimeout(function(){
 		if(!_found) { searchDevice(); }
 	}, _searchDelay * 1000);

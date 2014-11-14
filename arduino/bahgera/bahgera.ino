@@ -36,7 +36,15 @@ void loop() {
   RFduino_ULPDelay(INFINITE);
 }
 
-void RFduinoBLE_onDisconnect() {
+//void RFduinoBLE_onConnect() {
+//  RFduinoBLE.send("connected", 10);
+//}
+
+void RFduinoBLE_onDisconnect() {    
+  RFduinoBLE.send("disconnecting", 14);
+  gridLen = 144;
+  chunk = 1;
+  setup();
 }
 
 void RFduinoBLE_onReceive(char *data, int len)
@@ -44,7 +52,7 @@ void RFduinoBLE_onReceive(char *data, int len)
   int offset = 0;
   
   if(chunk == 1) {
-//    RFduinoBLE.send(data, 5);
+    RFduinoBLE.send(data, 5);
     gridLen = (int(data[0])-48)*16*16*16 + (int(data[1])-48)*16*16 + (int(data[2])-48)*16 + (int(data[3])-48);
     if(gridLen == 0) { //switch off
       digitalWrite(dataPin, LOW);
