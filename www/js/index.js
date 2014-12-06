@@ -40,7 +40,7 @@ var _uuid = 'offline';
 var _MAXDATASIZE = 18;
 
 //Maximum number of attempts to send data to RFDuino before giving up
-var _MAXATTEMPTS = 10;
+var _MAXATTEMPTS = 20;
 
 //True if device is found
 var _found = false;
@@ -85,7 +85,7 @@ var _pickedColor = '000000';
 var _processing = false;
 
 //Time to wait before trying again to send data to RFDuino when processing (in ms)
-var _sendDelay = 100;
+var _sendDelay = 5;
 
 //Number of attempts to send chunk of data to RFDuino
 var _nbAttempts = 0;
@@ -110,6 +110,10 @@ var _windowHeight, _windowWidth;
 		_grid = JSON.parse(localStorage.getItem('bahgera.grid#' + _uuid));
 		_layout = JSON.parse(localStorage.getItem('bahgera.layout#' + _uuid));
 		_leds = JSON.parse(localStorage.getItem('bahgera.leds#' + _uuid));
+		var tiles = JSON.parse(localStorage.getItem('bahgera.tiles#' + _uuid));
+		_nbTiles = tiles.nbTiles;
+		_nbTilesX = tiles.nbTilesX;
+		_nbTilesY = tiles.nbTilesY;
 	} catch(e){
 		log('Failed to parse variables from storage');
 	}
@@ -120,12 +124,16 @@ var _windowHeight, _windowWidth;
 		initGrid(0);
 		initLayout();
 	} else {
-		log("_layout=" + JSON.stringify(_layout));
-		log("_grid=" + JSON.stringify(_grid));
-		log("_leds=" + JSON.stringify(_leds));
+		log('Retrieved grid from local storage');
 	}
  }
- 
+
+ function saveVars() {
+	localStorage.setItem('bahgera.grid#' + _uuid, JSON.stringify(_grid));
+	localStorage.setItem('bahgera.layout#' + _uuid, JSON.stringify(_layout));
+	localStorage.setItem('bahgera.leds#' + _uuid, JSON.stringify(_leds));
+	localStorage.setItem('bahgera.tiles#' + _uuid, JSON.stringify({ nbTiles: _nbTiles, nbTilesX: _nbTilesX, nbTilesY: _nbTilesY }));
+ }
 
 //Draws search bar when searching device
 function buildSpinner() {
@@ -177,9 +185,7 @@ function drawColorPicker() {
  */
 function drawGrid(doEditLayout) {
 	log('Draw grid');
-	localStorage.setItem('bahgera.grid#' + _uuid, JSON.stringify(_grid));
-	localStorage.setItem('bahgera.layout#' + _uuid, JSON.stringify(_layout));
-	localStorage.setItem('bahgera.leds#' + _uuid, JSON.stringify(_leds));
+	saveVars();
 	var html = '<table id="gridTable"><tr><td></td>';
 	var size = getTileSize();
 	if(doEditLayout) { size = size * 0.8; }
@@ -270,7 +276,7 @@ app.initialize = function() {
 	$('#canvas').attr('width',_nbLedX + 'px');
 	$('#canvas').attr('height',_nbLedY + 'px');
 	
-  	log('Adding deviceready listener');
+  log('Adding deviceready listener');
 	document.addEventListener('deviceready', searchDevice, false);
 	
 	$('#canceTile').click(closeTileMenu);
@@ -309,7 +315,7 @@ app.disconnect = function() {
 	log('Disconnecting');
 	$("#test").hide();
 	rfduino.disconnect(function(){
-		log('Disonnected');
+		log('Disconnected');
 		_found = false;
 		_connected = false;
 		_processing = false;
@@ -487,7 +493,7 @@ function onData(data) {
 	var view = new Uint8Array(data);
 	var sData = String.fromCharCode.apply(null, Array.prototype.slice.apply(view));
 	if(sData.indexOf('done') === 0) {
-		log('Finished current job');
+		// log('Finished current job');
 		_processing = false;
 	} else log('Received: "' + sData + '"');
 }
@@ -497,8 +503,10 @@ function onData(data) {
  */
 function send() {
 	$('#sendButton').attr('style','color:blue');
+	var start = (new Date()).valueOf();
 	doWrite(getData(), function() {
-		log('Finished writing to RFDuino');
+		var totalTime = (new Date()).valueOf() - start;
+		log('Sent all data in ' + totalTime + 'ms');
 		$('#sendButton').removeAttr('style');
 	});
 }
@@ -508,8 +516,8 @@ function send() {
  */
 function switchOff() {
 	$('#offButton').css({'color':'blue'});
-	doWrite('0000', function() {
-		log('Finished writing to RFDuino');
+	doWrite('0', function() {
+		log('Switched off');
 		$('#offButton').css({'color':'black'});
 		_processing = false;
 	});
@@ -523,10 +531,9 @@ function doWrite(data, cb) {
 		log('DEBUG MODE: not sending data');
 		return cb();
 	}
-	var chunk = data.substring(0, _MAXDATASIZE);
-	log('Trying to send "' + chunk + '" (' + chunk.length + ' of ' + data.length + ' bytes)');
-	if(_processing) setTimeout(function(){
-			log('Still processing...');
+
+	if(_processing) return setTimeout(function(){
+			// log('Arduino still processing previous data (#' + (_nbAttempts+1) + '), waiting ' + _sendDelay + 'ms');
 			if(_nbAttempts < _MAXATTEMPTS) {
 				doWrite(data, cb);
 				_nbAttempts++;
@@ -536,19 +543,25 @@ function doWrite(data, cb) {
 			}
 		}, _sendDelay
 	);
-	else {
-		_processing = true;
-		_nbAttempts = 0;
-		log('RFDuino ready, now sending "' + chunk + '" (' + chunk.length + ' of ' + data.length + ' bytes)');
-		rfduino.write(chunk,
-			function() { 
-				if(data.length > _MAXDATASIZE) {
-					doWrite(data.substring(_MAXDATASIZE), cb);
-				} else cb();
-			}, 
+
+	_processing = true;
+	_nbAttempts = 0;
+
+	if(data.length < _MAXDATASIZE) {
+		return rfduino.write(data, cb, 
 			function(e) { log('ERROR:'+e); }
 		);
 	}
+
+	var chunk = data.substring(0, _MAXDATASIZE);
+	rfduino.write(chunk,
+		function() { 
+			if(data.length > _MAXDATASIZE) {
+				doWrite(data.substring(_MAXDATASIZE), cb);
+			} else cb();
+		}, 
+		function(e) { log('ERROR:'+e); }
+	);
 }
 
 
@@ -564,7 +577,7 @@ function doWrite(data, cb) {
  */
 function colorPicked(e) {
 	_pickedColor = e.target.getAttribute('color');
-	log('Picked color ' + _pickedColor);
+	// log('Picked color ' + _pickedColor);
 	$('#colorTable tr td[selected="true"]').removeAttr('selected').css({'border-color':'black' });
 	e.target.style.borderColor = 'white';
 	e.target.setAttribute('selected','true');
@@ -575,7 +588,7 @@ function colorPicked(e) {
  */
 function switchColor(e) {
 	_pickedColor = e.target.getAttribute('color');
-	log('Switch to ' + _pickedColor);
+	// log('Switch to ' + _pickedColor);
 	for(var tile=0;tile<_nbTiles;tile++) {
 		initGrid(tile);
 	}
@@ -588,9 +601,7 @@ function ledSelected(e) {
 	var ledPos = e.target.getAttribute('led');
 	var tile = e.target.getAttribute('nb');
 	if(ledPos === null || tile === null) { return log('Clicked outside of LED'); }
-	log('selected led ' + ledPos + ' of tile ' + tile);
-	log('Grid before:' + JSON.stringify(_grid[tile-1]));
-	log('Leds before:' + JSON.stringify(_leds[tile-1]));
+	// log('Selected led ' + ledPos + ' of tile ' + tile);
 	var led = _leds[tile-1][ledPos];
 	e.target.parentNode.removeAttribute('style');
 	var size = getTileSize();
@@ -598,8 +609,7 @@ function ledSelected(e) {
 		+ 'background-color:#' + _pickedColor + ';color:#' + _pickedColor);
 	led.color = _pickedColor;
 	_grid[tile-1][led.x][led.y].color = _pickedColor;
-	log('Grid after:' + JSON.stringify(_grid[tile-1]));
-	log('Leds after:' + JSON.stringify(_leds[tile-1]));
+	saveVars();
 }
 
 /**
@@ -612,17 +622,17 @@ function ledSelected(e) {
  * and where color is the color for the LED at this position, i.e. black by default
  */
 function initGrid(tile) {
-	log('Initializing grid with color='+_pickedColor + ' for tile=' + tile);
+	// log('Initializing grid with color='+_pickedColor + ' for tile=' + tile);
 	var pos = 0;
-  log('Init _leds');
+  // log('Init _leds');
 	_leds[tile] = [];_leds[tile].length = _nbLedX * _nbLedY;
-  log('Init _grid');
+  // log('Init _grid');
 	_grid[tile] = [];
-  log('Start initGrid');
+  // log('Start initGrid');
 	for(var x=0;x<_nbLedX;x++) {
 		var gridY=[];
 		for(var y=0;y<_nbLedY;y++) {
-			log('('+(x+1)+','+(y+1)+')=>'+pos);
+			// log('('+(x+1)+','+(y+1)+')=>'+pos);
 			var isReverse = true;
 			var posDiv = Math.floor(pos/_nbLedX);
 			if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = false;
@@ -711,7 +721,7 @@ function layoutTapped(e) {
 			_layout[x][y].nb = _nbTiles + 1;
 		}
 		_nbTiles++;
-		log('New layout: ' + JSON.stringify(_layout));
+		// log('New layout: ' + JSON.stringify(_layout));
 		_grid.push([]);
 		_leds.push([]);
 		initGrid(_nbTiles - 1);
@@ -839,8 +849,8 @@ function deleteTile() {
 
 function rotateTile() {
 	log('Rotate tile ' + JSON.stringify(_selectedTile));
-	log('Grid before:' + JSON.stringify(_grid[_selectedTile.nb-1]));
-	log('Leds before:' + JSON.stringify(_leds[_selectedTile.nb-1]));
+	logGrid('before rotate');
+	logLeds('before rotate');
 
 	var newGrid = [];
 	newGrid.length = _nbLedX;
@@ -869,8 +879,8 @@ function rotateTile() {
 	// 	_leds[_selectedTile.nb-1][i].color = newGrid[_leds[_selectedTile.nb-1][i].x][_leds[_selectedTile.nb-1][i].y].color;
 	// 	_grid[_selectedTile.nb-1][x][y].pos = i;
 	// }
-	log('Grid after:' + JSON.stringify(_grid[_selectedTile.nb-1]));
-	log('Leds after:' + JSON.stringify(_leds[_selectedTile.nb-1]));
+	logGrid('after rotate');
+	logLeds('after rotate');
 	drawGrid(true);
 	closeTileMenu();
 }
@@ -910,7 +920,7 @@ function rotateTile() {
 	var size = data.length.toString(16);
 	if(size.length == 2) { size = '00' + size; }
 	if(size.length == 3) { size = '0' + size; }
-	log('size=' + size);
+	// log('size=' + size);
 	data = size + data;
 	return data;
 }
@@ -938,7 +948,7 @@ function convertToBytes(data) {
 		var thisByte = data.substring(i*8,(i+1)*8);
 		bData+= binToASCII(thisByte);
 	}
-	log(bData.length + ' char in ' + data);
+	// log(bData.length + ' char in ' + data);
 	return bData;
 }
 
@@ -992,6 +1002,41 @@ function hideSettings() {
  *
  **********************************************************************************************************************/
 
+//Log _grid
+function logGrid(text) {
+	var html = '<br>' + text;
+	for(var t=0;t<_nbTiles;t++) {
+		html+= '<br>Tile #' + t + '<table>';
+		for(var y=0;y<_nbLedY;y++) {
+			html+='<tr>';
+			for(var x=0;x<_nbLedX;x++) {
+				html+='<td>'+_grid[t][x][y].pos+'|'+_grid[t][x][y].color+'</td>';
+			}
+			html+='</tr>';
+		} 
+		html+='</table>';
+	}
+	$("#log").append(html);
+}
+
+//Log _leds
+//leds[nb][pos]={x,y,color}
+function logLeds(text){
+	var html = '<br>' + text + '<table><tr>';
+	for(var t=0;t<_nbTiles;t++) {
+		html+= '<td>' + t + '</td>';
+	}
+	html+= '</tr><tr>';
+	for(var t=0;t<_nbTiles;t++) {
+		html+='<td>';
+		for(var pos=0;pos<_leds[t].length;pos++) {
+			html+= '(' + _leds[t][pos].x + ',' + _leds[t][pos].y + ')|' + _leds[t][pos].color+'<br>';
+		}
+		html+='</td>';
+	}
+	html+='</tr></table>'
+	$("#log").append(html);
+}
 
 //Clear logs
 function clearLogs(e) {

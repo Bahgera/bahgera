@@ -29,6 +29,7 @@ int chunk = 1;
  * @param {color} RGB decmal value (0-255)
  */
 void turnall(int color){
+  RFduinoBLE.send("turnall", 8);
   digitalWrite(latchPin, LOW);
   digitalWrite(blankPin, HIGH);
   for (int j = 0; j < gridLen / 2; j++) { 
@@ -62,6 +63,8 @@ void setup() {
   
   // start the BLE stack
   RFduinoBLE.begin(); 
+  
+  RFduinoBLE.send("ready", 6);
 }
 
 /**
@@ -98,20 +101,30 @@ void RFduinoBLE_onReceive(char *data, int len)
   
   //The first 4 characters of the first chunk gives us the length of the data to expect
   if(chunk == 1) {
-    int newgridLen = (int(data[0])-48)*16*16*16 + (int(data[1])-48)*16*16 + (int(data[2])-48)*16 + (int(data[3])-48);
-    if(newgridLen == 0) { //switch off
-//      digitalWrite(dataPin, LOW);
-//      digitalWrite(clockPin, LOW);
+    if(len == 1 && data[0] == '0') { //switch off
+      RFduinoBLE.send("off", 4);
       turnall(0);
       return;
     }
+    
+    if(len == 1 && data[0] == '1') { //reset
+      RFduinoBLE.send("reset", 6);
+      RFduino_systemReset();
+      setup();
+      return;
+    }
+    
+    int newgridLen = (int(data[0])-48)*16*16*16 + (int(data[1])-48)*16*16 + (int(data[2])-48)*16 + (int(data[3])-48);
     if(newgridLen != gridLen) {
       gridLen = newgridLen;
       data_t *p = (data_t*)ADDRESS_OF_PAGE(MY_FLASH_PAGE);
       struct data_t value = { 1, int(data[0]), int(data[1]), int(data[2]), int(data[3]) };
       flashWriteBlock(p, &value, sizeof(value));
     }
+    
     offset = 4;
+    
+//    RFduinoBLE.send("start", 6);
     digitalWrite(latchPin, LOW);
     digitalWrite(blankPin, HIGH);
   }
