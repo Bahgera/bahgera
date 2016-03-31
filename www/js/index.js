@@ -633,13 +633,30 @@ function initGrid(tile) {
 		var gridY=[];
 		for(var y=0;y<_nbLedY;y++) {
 			// log('('+(x+1)+','+(y+1)+')=>'+pos);
-			var isReverse = true;
-			var posDiv = Math.floor(pos/_nbLedX);
-			if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = false;
+
+			/** Original Baghera LED mapping
+			 *  0  1  2  3  
+			 *  7  6  5  4
+			 *  8  9 10 11
+			 * 15 14 13 12
+ 			 */
+			// var isReverse = true;
+			// var posDiv = Math.floor(pos/_nbLedX);
+			// if(posDiv/2 !== Math.floor(posDiv/2)) isReverse = false;
+			// var ledPos = pos;
+			// if(isReverse) {
+			// 	ledPos = (posDiv+1)*_nbLedX-(pos%_nbLedX)-1;
+			// }
+
+			/** New Baghera LED mapping
+			 *  0  1  2  3  
+			 *  4  5  6  7
+			 *  8  9 10 11
+			 * 12 13 14 15
+ 			 */
 			var ledPos = pos;
-			if(isReverse) {
-				ledPos = (posDiv+1)*_nbLedX-(pos%_nbLedX)-1;
-			}
+
+			//Update grid 
 			var led = { pos:ledPos, color:_pickedColor };
 			gridY.push({ pos:ledPos, color:_pickedColor });
 			_leds[tile][ledPos] = { x: x, y: y, color:_pickedColor };

@@ -1,6 +1,8 @@
 /*
 Bahgera
 Copyright (c) 2012-2014 Bahgera, All Rights Reserved
+
+Uses RFduino library: https://github.com/RFduino/RFduino/blob/master/README.md
 */
 #include <RFduinoBLE.h>
 
@@ -56,7 +58,10 @@ void setup() {
     gridLen = ((p->b)-48)*16*16*16 + ((p->c)-48)*16*16 + ((p->d)-48)*16 + ((p->e)-48);
   }
   
-  //Turn all LEDs to white
+  //Turn all LEDs to white in incremental steps to avoid sending to much power when circuit is cold
+  turnall(63);
+  turnall(127);
+  turnall(191);
   turnall(255);
 
   // this is the data we want to appear in the advertisement
