@@ -61,7 +61,7 @@ Replace the <code>- (void)viewWillAppear:(BOOL)animated</code> method with:
 
 Deploy to your iPhone
 
-## Android Setup
+## Android Setup (not tested)
 
 
     $ cd cordova-plugin-rfduino/examples/button
