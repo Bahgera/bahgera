@@ -37,6 +37,8 @@ void turnall(int color){
   }
   digitalWrite(latchPin, HIGH);
   digitalWrite(blankPin, LOW);
+  
+  digitalWrite(dataPin, LOW);
 }
   
 /**
@@ -141,6 +143,7 @@ void RFduinoBLE_onReceive(char *data, int len)
   if(chunk > (gridLen) / 18) { 
      digitalWrite(latchPin, HIGH);
      digitalWrite(blankPin, LOW);
+     digitalWrite(dataPin, LOW);
      chunk = 1;
   } else {
     chunk++;
