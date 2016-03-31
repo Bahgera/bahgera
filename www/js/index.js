@@ -277,7 +277,7 @@ app.initialize = function() {
 	$('#canvas').attr('height',_nbLedY + 'px');
 	
   log('Adding deviceready listener');
-	document.addEventListener('deviceready', searchDevice, false);
+	// document.addEventListener('deviceready', searchDevice, false);
 	
 	$('#canceTile').click(closeTileMenu);
 	$('#moveTile').click(moveTile);
