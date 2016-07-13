@@ -106,17 +106,17 @@ var _windowHeight, _windowWidth;
  **********************************************************************************************************************/
 
  function loadVars() {
- 	try{
-		_grid = JSON.parse(localStorage.getItem('bahgera.grid#' + _uuid));
-		_layout = JSON.parse(localStorage.getItem('bahgera.layout#' + _uuid));
-		_leds = JSON.parse(localStorage.getItem('bahgera.leds#' + _uuid));
-		var tiles = JSON.parse(localStorage.getItem('bahgera.tiles#' + _uuid));
-		_nbTiles = tiles.nbTiles;
-		_nbTilesX = tiles.nbTilesX;
-		_nbTilesY = tiles.nbTilesY;
-	} catch(e){
-		log('Failed to parse variables from storage');
-	}
+ // 	try{
+	// 	_grid = JSON.parse(localStorage.getItem('bahgera.grid#' + _uuid));
+	// 	_layout = JSON.parse(localStorage.getItem('bahgera.layout#' + _uuid));
+	// 	_leds = JSON.parse(localStorage.getItem('bahgera.leds#' + _uuid));
+	// 	var tiles = JSON.parse(localStorage.getItem('bahgera.tiles#' + _uuid));
+	// 	_nbTiles = tiles.nbTiles;
+	// 	_nbTilesX = tiles.nbTilesX;
+	// 	_nbTilesY = tiles.nbTilesY;
+	// } catch(e){
+	// 	log('Failed to parse variables from storage');
+	// }
 	if(!_grid || !_layout || !_leds || !_grid[0] || !_leds[0]) {
 	    _grid = []; _grid[0] = [];
 	    _leds = []; _leds[0] = [];
@@ -261,6 +261,7 @@ function drawGrid(doEditLayout) {
 var app = { };
 
 app.initialize = function() {
+    
 	log('Initializing');
 	
 	_windowHeight = $(document).height();
@@ -277,7 +278,7 @@ app.initialize = function() {
 	$('#canvas').attr('height',_nbLedY + 'px');
 	
   log('Adding deviceready listener');
-	// document.addEventListener('deviceready', searchDevice, false);
+	document.addEventListener('deviceready', searchDevice, false);
 	
 	$('#canceTile').click(closeTileMenu);
 	$('#moveTile').click(moveTile);
@@ -648,13 +649,46 @@ function initGrid(tile) {
 			// 	ledPos = (posDiv+1)*_nbLedX-(pos%_nbLedX)-1;
 			// }
 
-			/** New Baghera LED mapping
-			 *  0  1  2  3  
-			 *  4  5  6  7
-			 *  8  9 10 11
-			 * 12 13 14 15
+			/** New Baghera LED mapping (Feb. 22, 2016)
+			 *   6  7  0  1  
+			 *   2  3  4  5
+			 *  14 15  8  9 
+			 *  10 11 12 13
  			 */
-			var ledPos = pos;
+ 			 // var ledPos = pos;
+			var ledPos = 6;
+			if(pos == 1) ledPos = 7;
+			else if(pos ==  2) ledPos =  0;
+			else if(pos ==  3) ledPos =  1;
+			else if(pos ==  4) ledPos =  5;
+			else if(pos ==  5) ledPos =  4;
+			else if(pos ==  6) ledPos =  3;
+			else if(pos ==  7) ledPos =  2;
+			else if(pos ==  8) ledPos = 14;
+			else if(pos ==  9) ledPos = 15;
+			else if(pos == 10) ledPos =  8;
+			else if(pos == 11) ledPos =  9;
+			else if(pos == 12) ledPos = 13;
+			else if(pos == 13) ledPos = 12;
+			else if(pos == 14) ledPos = 11;
+			else if(pos == 15) ledPos = 10;
+
+			// var ledPos = 1;
+			// if(pos == 1) ledPos = 2;
+			// else if(pos ==  2) ledPos = 3;
+			// else if(pos ==  3) ledPos = 4;
+			// else if(pos ==  4) ledPos = 5;
+			// else if(pos ==  5) ledPos = 6;
+			// else if(pos ==  6) ledPos = 7;
+			// else if(pos ==  7) ledPos = 8;
+			// else if(pos ==  8) ledPos = 9;
+			// else if(pos ==  9) ledPos =  10;
+			// else if(pos == 10) ledPos =  11;
+			// else if(pos == 11) ledPos =  12;
+			// else if(pos == 12) ledPos =  13;
+			// else if(pos == 13) ledPos =  14;
+			// else if(pos == 14) ledPos =  15;
+			// else if(pos == 15) ledPos = 0;
 
 			//Update grid 
 			var led = { pos:ledPos, color:_pickedColor };
