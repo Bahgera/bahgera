@@ -51,18 +51,22 @@ void setup() {
   pinMode(clockPin, OUTPUT);
   pinMode(blankPin, OUTPUT);
   pinMode(latchPin, OUTPUT);
+
+  turnall(31);
+  delay(20);
+  turnall(63);
+  delay(20);
+  turnall(127);
+  delay(20);
+  turnall(191);
+  delay(20);
+  turnall(255);
   
   //Retrieve gridLen from Flash
   data_t *p = (data_t*)ADDRESS_OF_PAGE(MY_FLASH_PAGE);
   if(p->a == 1) {
     gridLen = ((p->b)-48)*16*16*16 + ((p->c)-48)*16*16 + ((p->d)-48)*16 + ((p->e)-48);
-  }
-  
-  //Turn all LEDs to white in incremental steps to avoid sending to much power when circuit is cold
-  turnall(63);
-  turnall(127);
-  turnall(191);
-  turnall(255);
+  } 
 
   // this is the data we want to appear in the advertisement
   // (the deviceName length plus the advertisement length must be <= 18 bytes
@@ -131,7 +135,6 @@ void RFduinoBLE_onReceive(char *data, int len)
     
     offset = 4;
     
-//    RFduinoBLE.send("start", 6);
     digitalWrite(latchPin, LOW);
     digitalWrite(blankPin, HIGH);
   }
