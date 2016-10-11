@@ -655,7 +655,6 @@ function initGrid(tile) {
 			 *  14 15  8  9 
 			 *  10 11 12 13
  			 */
- 			 // var ledPos = pos;
 			var ledPos = 6;
 			if(pos == 1) ledPos = 7;
 			else if(pos ==  2) ledPos =  0;
@@ -672,23 +671,6 @@ function initGrid(tile) {
 			else if(pos == 13) ledPos = 12;
 			else if(pos == 14) ledPos = 11;
 			else if(pos == 15) ledPos = 10;
-
-			// var ledPos = 1;
-			// if(pos == 1) ledPos = 2;
-			// else if(pos ==  2) ledPos = 3;
-			// else if(pos ==  3) ledPos = 4;
-			// else if(pos ==  4) ledPos = 5;
-			// else if(pos ==  5) ledPos = 6;
-			// else if(pos ==  6) ledPos = 7;
-			// else if(pos ==  7) ledPos = 8;
-			// else if(pos ==  8) ledPos = 9;
-			// else if(pos ==  9) ledPos =  10;
-			// else if(pos == 10) ledPos =  11;
-			// else if(pos == 11) ledPos =  12;
-			// else if(pos == 12) ledPos =  13;
-			// else if(pos == 13) ledPos =  14;
-			// else if(pos == 14) ledPos =  15;
-			// else if(pos == 15) ledPos = 0;
 
 			//Update grid 
 			var led = { pos:ledPos, color:_pickedColor };

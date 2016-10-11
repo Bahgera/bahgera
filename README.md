@@ -19,7 +19,7 @@ From Bahgera directory:
 
 Install the rfduino plugin
 
-    $ cordova plugin add com.megster.cordova.rfduino
+    $ cordova plugin add cordova-plugin-rfduino
     
 
 Install the Camera plugin
